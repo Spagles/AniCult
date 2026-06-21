@@ -1,5 +1,4 @@
 import { getTorrent } from "@/lib/torrent-client";
-import { Readable } from "stream";
 
 function getMimeType(filename) {
   const ext = filename.split(".").pop().toLowerCase();
@@ -38,6 +37,11 @@ export async function GET(request) {
     return new Response("File not found at that index", { status: 404 });
   }
 
+  // Deselect all other files to prioritize bandwidth and save space
+  torrent.files.forEach((f) => {
+    if (f !== file) f.deselect();
+  });
+
   // Prioritize this file for download
   file.select();
 
@@ -54,8 +58,7 @@ export async function GET(request) {
     const chunkSize = end - start + 1;
 
     try {
-      const nodeStream = file.createReadStream({ start, end });
-      const webStream = Readable.toWeb(nodeStream);
+      const webStream = file.stream({ start, end });
 
       return new Response(webStream, {
         status: 206,
@@ -74,8 +77,7 @@ export async function GET(request) {
 
   // Full file response (no Range header)
   try {
-    const nodeStream = file.createReadStream();
-    const webStream = Readable.toWeb(nodeStream);
+    const webStream = file.stream();
 
     return new Response(webStream, {
       headers: {
