@@ -83,7 +83,6 @@ export async function GET(request) {
 
     return new Response(webStream, {
       headers: {
-        "Content-Length": String(fileSize),
         "Content-Type": mimeType,
         "Accept-Ranges": "bytes",
         "Cache-Control": "no-cache",

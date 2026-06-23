@@ -6,6 +6,11 @@ const TRACKERS = [
   "udp://tracker.opentrackr.org:1337/announce",
   "udp://exodus.desync.com:6969/announce",
   "udp://tracker.torrent.eu.org:451/announce",
+  "udp://tracker.moeking.me:6969/announce",
+  "http://tracker.anirena.com:8080/announce",
+  "udp://opentracker.i2p.rocks:6969/announce",
+  "https://tracker.bt-hash.com:443/announce",
+  "udp://bt1.archive.org:6969/announce",
 ];
 
 function buildMagnet(infoHash, title) {
