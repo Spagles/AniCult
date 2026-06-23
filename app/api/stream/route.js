@@ -53,7 +53,9 @@ export async function GET(request) {
     const parts = range.replace(/bytes=/, "").split("-");
     const start = parseInt(parts[0]);
     // Limit chunk size to 2MB to prevent memory issues
-    const requestedEnd = parts[1] ? parseInt(parts[1]) : start + 2 * 1024 * 1024 - 1;
+    const requestedEnd = parts[1]
+      ? parseInt(parts[1])
+      : start + 2 * 1024 * 1024 - 1;
     const end = Math.min(requestedEnd, fileSize - 1);
     const chunkSize = end - start + 1;
 

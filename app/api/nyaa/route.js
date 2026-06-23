@@ -64,10 +64,7 @@ export async function GET(request) {
   const filter = searchParams.get("f") || "0"; // Default: No filter
 
   if (!q) {
-    return NextResponse.json(
-      { error: "Missing q parameter" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Missing q parameter" }, { status: 400 });
   }
 
   try {

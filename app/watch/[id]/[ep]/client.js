@@ -103,32 +103,29 @@ export function WatchClient({ anime, episode }) {
   };
 
   // Pick a specific file to stream
-  const pickFile = useCallback(
-    (hash, fileIndex, magnet) => {
-      setSelectedFileIndex(fileIndex);
-      const url = `/api/stream?hash=${hash}&file=${fileIndex}`;
-      setStreamUrl(url);
+  const pickFile = useCallback((hash, fileIndex, magnet) => {
+    setSelectedFileIndex(fileIndex);
+    const url = `/api/stream?hash=${hash}&file=${fileIndex}`;
+    setStreamUrl(url);
 
-      // Start polling torrent status
-      if (statusInterval.current) clearInterval(statusInterval.current);
-      statusInterval.current = setInterval(async () => {
-        try {
-          const res = await fetch(`/api/torrent?hash=${hash}`);
-          if (res.ok) {
-            const status = await res.json();
-            setTorrentStatus(status);
-            if (status.progress >= 100) {
-              clearInterval(statusInterval.current);
-              statusInterval.current = null;
-            }
+    // Start polling torrent status
+    if (statusInterval.current) clearInterval(statusInterval.current);
+    statusInterval.current = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/torrent?hash=${hash}`);
+        if (res.ok) {
+          const status = await res.json();
+          setTorrentStatus(status);
+          if (status.progress >= 100) {
+            clearInterval(statusInterval.current);
+            statusInterval.current = null;
           }
-        } catch {
-          // Ignore polling errors
         }
-      }, 3000);
-    },
-    [],
-  );
+      } catch {
+        // Ignore polling errors
+      }
+    }, 3000);
+  }, []);
 
   // Select a torrent and start loading
   const selectTorrent = useCallback(
@@ -262,7 +259,9 @@ export function WatchClient({ anime, episode }) {
           <div className="loading">
             <div className="loading-spinner" />
             <div>Connecting to peers & fetching metadata...</div>
-            <div style={{ fontSize: 12, color: "var(--text-dim)", marginTop: 6 }}>
+            <div
+              style={{ fontSize: 12, color: "var(--text-dim)", marginTop: 6 }}
+            >
               This may take up to 60 seconds
             </div>
           </div>
@@ -278,17 +277,17 @@ export function WatchClient({ anime, episode }) {
       {torrentStatus && streamUrl && (
         <div className="stream-stats">
           <span className="stat-item">
-            <span className="stat-icon">↓</span> {formatSpeed(torrentStatus.downloadSpeed)}
+            <span className="stat-icon">↓</span>{" "}
+            {formatSpeed(torrentStatus.downloadSpeed)}
           </span>
           <span className="stat-item">
-            <span className="stat-icon">↑</span> {formatSpeed(torrentStatus.uploadSpeed)}
+            <span className="stat-icon">↑</span>{" "}
+            {formatSpeed(torrentStatus.uploadSpeed)}
           </span>
           <span className="stat-item">
             <span className="stat-icon">👥</span> {torrentStatus.numPeers} peers
           </span>
-          <span className="stat-item">
-            {torrentStatus.progress}%
-          </span>
+          <span className="stat-item">{torrentStatus.progress}%</span>
           <div className="stream-progress-bar">
             <div
               className="stream-progress-fill"
@@ -316,11 +315,7 @@ export function WatchClient({ anime, episode }) {
               key={f.index}
               className={`file-item ${selectedFileIndex === f.index ? "file-item-active" : ""}`}
               onClick={() =>
-                pickFile(
-                  torrentInfo.infoHash,
-                  f.index,
-                  selectedTorrent?.magnet,
-                )
+                pickFile(torrentInfo.infoHash, f.index, selectedTorrent?.magnet)
               }
             >
               <span className="file-name">{f.name}</span>
@@ -370,14 +365,16 @@ export function WatchClient({ anime, episode }) {
               <option value="1_4">Raw</option>
               <option value="1_0">All Anime</option>
             </select>
-            <button type="submit" className="btn btn-primary btn-sm" id="nyaa-search-btn">
+            <button
+              type="submit"
+              className="btn btn-primary btn-sm"
+              id="nyaa-search-btn"
+            >
               Search
             </button>
           </form>
 
-          {error && !searching && (
-            <div className="torrent-error">{error}</div>
-          )}
+          {error && !searching && <div className="torrent-error">{error}</div>}
 
           {searching ? (
             <div className="loading" style={{ padding: 24 }}>
@@ -407,9 +404,7 @@ export function WatchClient({ anime, episode }) {
                     <span className="torrent-size">{t.size}</span>
                     <span className="torrent-seeders">▲ {t.seeders}</span>
                     <span className="torrent-leechers">▼ {t.leechers}</span>
-                    <span className="torrent-downloads">
-                      ⬇ {t.downloads}
-                    </span>
+                    <span className="torrent-downloads">⬇ {t.downloads}</span>
                     <span className="torrent-date">{timeAgo(t.pubDate)}</span>
                   </div>
                 </button>

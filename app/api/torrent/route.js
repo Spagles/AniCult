@@ -46,10 +46,7 @@ export async function GET(request) {
 
   const torrent = await getTorrent(hash);
   if (!torrent) {
-    return NextResponse.json(
-      { error: "Torrent not found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ error: "Torrent not found" }, { status: 404 });
   }
 
   return NextResponse.json({
