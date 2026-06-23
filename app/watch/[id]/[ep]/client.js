@@ -36,6 +36,206 @@ function timeAgo(dateStr) {
   return "just now";
 }
 
+function IconArrowLeft({ size = 16 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M19 12H5" />
+      <polyline points="12 19 5 12 12 5" />
+    </svg>
+  );
+}
+
+function IconArrowRight({ size = 16 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5 12h14" />
+      <polyline points="12 5 19 12 12 19" />
+    </svg>
+  );
+}
+
+function IconDownload({ size = 16 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+  );
+}
+
+function IconUpload({ size = 16 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="17 8 12 3 7 8" />
+      <line x1="12" y1="3" x2="12" y2="15" />
+    </svg>
+  );
+}
+
+function IconUsers({ size = 16 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+
+function IconChevronUp({ size = 16 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="18 15 12 9 6 15" />
+    </svg>
+  );
+}
+
+function IconChevronDown({ size = 16 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+}
+
+function IconAlertTriangle({ size = 16 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+      <line x1="12" y1="9" x2="12" y2="13" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  );
+}
+
+function IconCheck({ size = 16 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
+function IconArrowUp({ size = 12 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <line x1="12" y1="19" x2="12" y2="5" />
+      <polyline points="5 12 12 5 19 12" />
+    </svg>
+  );
+}
+
+function IconArrowDown({ size = 12 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <polyline points="19 12 12 19 5 12" />
+    </svg>
+  );
+}
+
 export function WatchClient({ anime, episode }) {
   const [torrents, setTorrents] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -231,7 +431,7 @@ export function WatchClient({ anime, episode }) {
               href={`/watch/${anime.id}/${episode - 1}`}
               className="btn btn-outline btn-sm"
             >
-              ← Prev
+              <IconArrowLeft /> Prev
             </Link>
           )}
           {episode < totalEps && (
@@ -239,7 +439,7 @@ export function WatchClient({ anime, episode }) {
               href={`/watch/${anime.id}/${episode + 1}`}
               className="btn btn-primary btn-sm"
             >
-              Next →
+              Next <IconArrowRight />
             </Link>
           )}
         </div>
@@ -267,7 +467,7 @@ export function WatchClient({ anime, episode }) {
           </div>
         ) : (
           <div className="loading">
-            <div style={{ fontSize: 32, marginBottom: 12 }}>🔽</div>
+            <IconDownload size={32} />
             <div>Select a torrent below to start streaming</div>
           </div>
         )}
@@ -277,15 +477,22 @@ export function WatchClient({ anime, episode }) {
       {torrentStatus && streamUrl && (
         <div className="stream-stats">
           <span className="stat-item">
-            <span className="stat-icon">↓</span>{" "}
+            <span className="stat-icon">
+              <IconDownload size={14} />
+            </span>{" "}
             {formatSpeed(torrentStatus.downloadSpeed)}
           </span>
           <span className="stat-item">
-            <span className="stat-icon">↑</span>{" "}
+            <span className="stat-icon">
+              <IconUpload size={14} />
+            </span>{" "}
             {formatSpeed(torrentStatus.uploadSpeed)}
           </span>
           <span className="stat-item">
-            <span className="stat-icon">👥</span> {torrentStatus.numPeers} peers
+            <span className="stat-icon">
+              <IconUsers size={14} />
+            </span>{" "}
+            {torrentStatus.numPeers} peers
           </span>
           <span className="stat-item">{torrentStatus.progress}%</span>
           <div className="stream-progress-bar">
@@ -300,9 +507,12 @@ export function WatchClient({ anime, episode }) {
       {/* MKV Warning */}
       {currentFile && !isPlayable(currentFile.name) && (
         <div className="mkv-warning">
-          <strong>⚠ MKV Format</strong> — This video may not play in
-          Chrome/Safari. It works natively in Firefox. If playback fails, try
-          selecting an MP4 release from the torrent picker.
+          <strong>
+            <IconAlertTriangle size={16} /> MKV Format
+          </strong>{" "}
+          — This video may not play in Chrome/Safari. It works natively in
+          Firefox. If playback fails, try selecting an MP4 release from the
+          torrent picker.
         </div>
       )}
 
@@ -338,10 +548,12 @@ export function WatchClient({ anime, episode }) {
       >
         <span>
           {selectedTorrent
-            ? `Source: ${selectedTorrent.title.substring(0, 60)}${selectedTorrent.title.length > 60 ? "…" : ""}`
+            ? `Source: ${selectedTorrent.title.substring(0, 60)}${selectedTorrent.title.length > 60 ? "..." : ""}`
             : "Torrent Sources"}
         </span>
-        <span className="toggle-icon">{showPicker ? "▲" : "▼"}</span>
+        <span className="toggle-icon">
+          {showPicker ? <IconChevronUp /> : <IconChevronDown />}
+        </span>
       </button>
 
       {/* Torrent Picker */}
@@ -393,7 +605,9 @@ export function WatchClient({ anime, episode }) {
                 >
                   <div className="torrent-item-title">
                     {t.trusted && (
-                      <span className="torrent-badge trusted">✓ Trusted</span>
+                      <span className="torrent-badge trusted">
+                        <IconCheck size={12} /> Trusted
+                      </span>
                     )}
                     {t.remake && (
                       <span className="torrent-badge remake">Remake</span>
@@ -402,9 +616,15 @@ export function WatchClient({ anime, episode }) {
                   </div>
                   <div className="torrent-item-meta">
                     <span className="torrent-size">{t.size}</span>
-                    <span className="torrent-seeders">▲ {t.seeders}</span>
-                    <span className="torrent-leechers">▼ {t.leechers}</span>
-                    <span className="torrent-downloads">⬇ {t.downloads}</span>
+                    <span className="torrent-seeders">
+                      <IconArrowUp /> {t.seeders}
+                    </span>
+                    <span className="torrent-leechers">
+                      <IconArrowDown /> {t.leechers}
+                    </span>
+                    <span className="torrent-downloads">
+                      <IconDownload size={12} /> {t.downloads}
+                    </span>
                     <span className="torrent-date">{timeAgo(t.pubDate)}</span>
                   </div>
                 </button>
