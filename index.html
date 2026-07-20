@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AniCult</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <nav class="nav">
+      <a href="#/" class="nav-logo">AniCult</a>
+      <div class="nav-links">
+        <a href="#/">Home</a>
+        <a href="#/search?sort=TRENDING_DESC">Trending</a>
+        <a href="#/search?sort=POPULARITY_DESC">Popular</a>
+        <a href="#/watchlist">Watchlist</a>
+        <a href="#/history">History</a>
+      </div>
+      <form class="nav-search" id="nav-search-form">
+        <input
+          type="text"
+          placeholder="Search anime..."
+          id="nav-search-input"
+        />
+        <button type="submit" id="nav-search-btn">Search</button>
+      </form>
+    </nav>
+
+    <main class="main" id="app"></main>
+
+    <footer class="footer">
+      AniCult &mdash; For personal use only. Data from AniList.
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
