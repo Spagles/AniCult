@@ -2,8 +2,13 @@
   "use strict";
 
   const ANILIST_URL = "https://graphql.anilist.co";
-  const CORS_PROXY = "https://api.allorigins.win/raw?url=";
   const NYAA_RSS = "https://nyaa.si/?page=rss";
+
+  const CORS_PROXIES = [
+    (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+  ];
 
   const MEDIA_FIELDS_SMALL = `
     id
@@ -38,6 +43,10 @@
     "wss://tracker.openwebtorrent.com",
     "wss://tracker.btorrent.xyz",
     "wss://tracker.files.fm:7073/announce",
+    "wss://tracker.webtorrent.dev",
+    "wss://tracker.novg.net",
+    "wss://tracker.cluejack.info:6969",
+    "wss://tracker.lilithraws.org",
   ];
 
   const app = document.getElementById("app");
@@ -172,13 +181,28 @@
 
   async function searchNyaa(query, category = "1_2") {
     const url = `${NYAA_RSS}&c=${category}&q=${encodeURIComponent(query)}`;
-    const proxyUrl = CORS_PROXY + encodeURIComponent(url);
-    const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(20000) });
-    if (!res.ok) throw new Error(`Nyaa search failed (${res.status})`);
-    const xml = await res.text();
-    const results = parseRSS(xml);
-    results.sort((a, b) => b.seeders - a.seeders);
-    return results;
+    let lastError = null;
+    for (const proxyFn of CORS_PROXIES) {
+      const proxyUrl = proxyFn(url);
+      try {
+        const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(15000) });
+        if (!res.ok) continue;
+        const text = await res.text();
+        if (!text.includes("<item>")) continue;
+        const results = parseRSS(text);
+        if (results.length === 0) continue;
+        results.sort((a, b) => b.seeders - a.seeders);
+        return results;
+      } catch (e) {
+        lastError = e;
+        continue;
+      }
+    }
+    throw new Error(
+      lastError && lastError.name === "TimeoutError"
+        ? "Nyaa search timed out. Try again in a moment."
+        : "Could not reach nyaa.si. All CORS proxies failed."
+    );
   }
 
   // ── Storage ────────────────────────────────────────────
@@ -739,21 +763,21 @@
       html += `</div></div>`;
 
       html += `<div class="player-wrapper">`;
-      if (streamUrl) {
-        html += `<video id="video-player" src="${streamUrl}" controls autoplay></video>`;
-      } else if (loading) {
+      if (loading) {
         html += `<div class="loading"><div class="loading-spinner"></div><div>Connecting to peers...</div><div style="font-size:12px;color:var(--text-dim);margin-top:6px">Waiting for peers via WebRTC. This may take a moment.</div></div>`;
+      } else if (streamUrl) {
+        html += `<video id="video-player" src="${esc(streamUrl)}" controls autoplay></video>`;
       } else {
-        html += `<div class="loading">${icons.download(32)}<div>Select a torrent below to start streaming</div></div>`;
+        html += `<video id="video-player" controls style="display:none"></video><div class="loading" id="player-placeholder">${icons.download(32)}<div>Select a torrent below to start streaming</div></div>`;
       }
       html += `</div>`;
 
       if (torrentStatus && streamUrl) {
         html += `<div class="stream-stats">
-          <span class="stat-item"><span class="stat-icon">${icons.download(14)}</span> ${formatSpeed(torrentStatus.downloadSpeed)}</span>
-          <span class="stat-item"><span class="stat-icon">${icons.upload(14)}</span> ${formatSpeed(torrentStatus.uploadSpeed)}</span>
-          <span class="stat-item"><span class="stat-icon">${icons.users(14)}</span> ${torrentStatus.numPeers} peers</span>
-          <span class="stat-item">${Math.round(torrentStatus.progress * 100)}%</span>
+          <span class="stat-item"><span class="stat-icon">${icons.download(14)}</span> <span class="stat-dl">${formatSpeed(torrentStatus.downloadSpeed)}</span></span>
+          <span class="stat-item"><span class="stat-icon">${icons.upload(14)}</span> <span class="stat-ul">${formatSpeed(torrentStatus.uploadSpeed)}</span></span>
+          <span class="stat-item"><span class="stat-icon">${icons.users(14)}</span> <span class="stat-peers">${torrentStatus.numPeers} peers</span></span>
+          <span class="stat-item stat-pct">${Math.round(torrentStatus.progress * 100)}%</span>
           <div class="stream-progress-bar"><div class="stream-progress-fill" style="width:${Math.round(torrentStatus.progress * 100)}%"></div></div>
         </div>`;
       }
@@ -928,11 +952,15 @@
           downloaded: activeTorrent.downloaded,
           total: activeTorrent.length,
         };
-        render();
-        if (activeTorrent.progress >= 1) {
-          clearInterval(statusInterval);
-          statusInterval = null;
+        const statsEl = document.querySelector(".stream-stats");
+        if (statsEl) {
+          statsEl.querySelector(".stat-dl").textContent = formatSpeed(torrentStatus.downloadSpeed);
+          statsEl.querySelector(".stat-ul").textContent = formatSpeed(torrentStatus.uploadSpeed);
+          statsEl.querySelector(".stat-peers").textContent = torrentStatus.numPeers + " peers";
+          statsEl.querySelector(".stat-pct").textContent = Math.round(torrentStatus.progress * 100) + "%";
+          statsEl.querySelector(".stream-progress-fill").style.width = Math.round(torrentStatus.progress * 100) + "%";
         }
+        if (activeTorrent.progress >= 1) { clearInterval(statusInterval); statusInterval = null; }
       }, 2000);
     }
 
@@ -941,30 +969,39 @@
       const file = activeTorrent.files[fileIndex];
       if (!file) return;
       selectedFileIndex = fileIndex;
-      activeTorrent.files.forEach((f, i) => {
-        if (i !== fileIndex) f.deselect();
-      });
+      activeTorrent.files.forEach((f, i) => { if (i !== fileIndex) f.deselect(); });
       file.select();
-      streamUrl = file.renderTo(
-        document.createElement("video"),
-        { autoplay: true },
-        (err, elem) => {
-          if (!err && elem) {
-            streamUrl = elem.src || "";
-            render();
-          }
-        },
-      );
-      if (!streamUrl || streamUrl === "") {
-        file.getBlobURL((err, url) => {
-          if (!err && url) {
-            streamUrl = url;
-            render();
-          }
-        });
-      }
+      loading = true;
+      streamUrl = "";
       startStatusPolling();
       render();
+
+      requestAnimationFrame(() => {
+        const videoEl = document.getElementById("video-player");
+        const placeholder = document.getElementById("player-placeholder");
+        if (!videoEl) return;
+        if (placeholder) placeholder.style.display = "none";
+        videoEl.style.display = "block";
+
+        if (PLAYABLE_RE.test(file.name)) {
+          file.renderTo(videoEl, { autoplay: true, controls: true }, (err) => {
+            if (err) {
+              console.error("renderTo failed, falling back to blob URL", err);
+              file.getBlobURL((err2, url) => {
+                if (!err2 && url) { streamUrl = url; loading = false; videoEl.src = url; videoEl.play().catch(() => {}); render(); }
+              });
+            } else {
+              loading = false;
+              streamUrl = "streaming";
+              render();
+            }
+          });
+        } else {
+          file.getBlobURL((err, url) => {
+            if (!err && url) { streamUrl = url; loading = false; videoEl.src = url; videoEl.play().catch(() => {}); render(); }
+          });
+        }
+      });
     }
 
     async function selectTorrent(t) {
