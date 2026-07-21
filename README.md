@@ -42,21 +42,21 @@ Requires Node.js 18+. Set `NYAA_PROXY` in `.env` if nyaa.si is blocked in your r
 
 ## Files
 
-| File | What it does |
-|------|-------------|
-| `index.html` | Nav, search bar, main container, footer |
-| `styles.css` | All styles — dark theme, responsive, components |
-| `app.js` | SPA router, AniList API, rendering, localStorage |
+| File         | What it does                                     |
+| ------------ | ------------------------------------------------ |
+| `index.html` | Nav, search bar, main container, footer          |
+| `styles.css` | All styles — dark theme, responsive, components  |
+| `app.js`     | SPA router, AniList API, rendering, localStorage |
 
 ## API Routes (Backend)
 
-| Route | Method | Description |
-|-------|--------|-------------|
-| `/api/nyaa?q=...&c=...` | GET | Search Nyaa.si RSS, returns magnet links |
-| `/api/torrent` | POST | Add torrent by magnet URI |
-| `/api/torrent?hash=...` | GET | Torrent status (progress, speed, peers) |
-| `/api/torrent?hash=...` | DELETE | Remove torrent |
-| `/api/stream?hash=...&file=...` | GET | Stream video with range request support |
+| Route                           | Method | Description                              |
+| ------------------------------- | ------ | ---------------------------------------- |
+| `/api/nyaa?q=...&c=...`         | GET    | Search Nyaa.si RSS, returns magnet links |
+| `/api/torrent`                  | POST   | Add torrent by magnet URI                |
+| `/api/torrent?hash=...`         | GET    | Torrent status (progress, speed, peers)  |
+| `/api/torrent?hash=...`         | DELETE | Remove torrent                           |
+| `/api/stream?hash=...&file=...` | GET    | Stream video with range request support  |
 
 ## How It Works
 

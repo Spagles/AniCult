@@ -724,11 +724,17 @@
         html += `<div class="torrent-picker">
           <form class="torrent-search" id="nyaa-search-form">
             <input type="text" value="${esc(searchInputVal)}" placeholder="Search nyaa.si for torrents..." id="nyaa-search">
-            <select class="torrent-category" id="nyaa-category">
-              <option value="1_2" ${category === "1_2" ? "selected" : ""}>English Subs</option>
-              <option value="1_4" ${category === "1_4" ? "selected" : ""}>Raw</option>
-              <option value="1_0" ${category === "1_0" ? "selected" : ""}>All Anime</option>
-            </select>
+            <div class="custom-select" id="nyaa-category-select">
+              <button type="button" class="custom-select-trigger" id="nyaa-category-trigger">
+                <span>${category === "1_2" ? "English Subs" : category === "1_4" ? "Raw" : "All Anime"}</span>
+                <span class="custom-select-arrow">${icons.chevronDown(10)}</span>
+              </button>
+              <div class="custom-select-dropdown">
+                <button type="button" class="custom-select-option ${category === "1_2" ? "active" : ""}" data-value="1_2">English Subs</button>
+                <button type="button" class="custom-select-option ${category === "1_4" ? "active" : ""}" data-value="1_4">Raw</button>
+                <button type="button" class="custom-select-option ${category === "1_0" ? "active" : ""}" data-value="1_0">All Anime</button>
+              </div>
+            </div>
             <button type="submit" class="btn btn-primary btn-sm" id="nyaa-search-btn">Search</button>
           </form>`;
 
@@ -788,13 +794,22 @@
           doSearch();
         });
 
-      // Category change
-      const cat = document.getElementById("nyaa-category");
-      if (cat)
-        cat.addEventListener("change", (e) => {
-          category = e.target.value;
-          doSearch();
+      // Category custom dropdown
+      const catSelect = document.getElementById("nyaa-category-select");
+      const catTrigger = document.getElementById("nyaa-category-trigger");
+      if (catTrigger && catSelect) {
+        catTrigger.addEventListener("click", (e) => {
+          e.stopPropagation();
+          catSelect.classList.toggle("open");
         });
+        catSelect.querySelectorAll(".custom-select-option").forEach((opt) => {
+          opt.addEventListener("click", () => {
+            category = opt.dataset.value;
+            catSelect.classList.remove("open");
+            doSearch();
+          });
+        });
+      }
 
       // Torrent toggle
       const toggle = document.getElementById("torrent-toggle");
@@ -832,6 +847,12 @@
         si.addEventListener("input", (e) => {
           searchInputVal = e.target.value;
         });
+
+      // Close custom dropdown on outside click
+      document.addEventListener("click", (e) => {
+        const sel = document.getElementById("nyaa-category-select");
+        if (sel && !sel.contains(e.target)) sel.classList.remove("open");
+      });
     }
 
     async function doSearch() {

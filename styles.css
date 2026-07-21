@@ -35,6 +35,30 @@ body {
   color: var(--text);
   line-height: 1.5;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--text);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-dim);
 }
 
 a {
@@ -54,6 +78,15 @@ button {
   background: none;
   color: inherit;
   font-size: inherit;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 input,
@@ -66,11 +99,106 @@ select {
   border-radius: var(--radius);
   padding: 8px 12px;
   outline: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+input::placeholder {
+  color: var(--text-dim);
 }
 
 input:focus,
 select:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(230, 57, 70, 0.15);
+}
+
+/* Custom select dropdown */
+.custom-select {
+  position: relative;
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.custom-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  color: inherit;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+  user-select: none;
+}
+
+.custom-select-trigger:hover,
+.custom-select.open .custom-select-trigger {
+  border-color: var(--accent);
+}
+
+.custom-select.open .custom-select-trigger {
+  box-shadow: 0 0 0 2px rgba(230, 57, 70, 0.15);
+}
+
+.custom-select-arrow {
+  font-size: 10px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.custom-select.open .custom-select-arrow {
+  transform: rotate(180deg);
+}
+
+.custom-select-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  z-index: 200;
+  display: none;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.custom-select.open .custom-select-dropdown {
+  display: block;
+}
+
+.custom-select-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.custom-select-option:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.custom-select-option.active {
+  color: var(--accent);
+  background: rgba(230, 57, 70, 0.08);
 }
 
 .nav {
@@ -132,6 +260,7 @@ select:focus {
   border-radius: var(--radius);
   font-size: 14px;
   font-weight: 500;
+  transition: background 0.15s ease;
 }
 
 .nav-search button:hover {
@@ -460,6 +589,11 @@ select:focus {
   border-color: var(--accent);
 }
 
+.ep-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .ep-btn-watched {
   color: var(--accent);
   border-color: var(--accent);
@@ -484,6 +618,11 @@ select:focus {
   transition: all 0.15s ease;
 }
 
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .btn-primary {
   background: var(--accent);
   color: var(--text);
@@ -491,6 +630,11 @@ select:focus {
 
 .btn-primary:hover {
   background: var(--accent-hover);
+}
+
+.btn-primary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .btn-outline {
@@ -503,6 +647,11 @@ select:focus {
   color: var(--text);
 }
 
+.btn-outline:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .btn-danger {
   background: transparent;
   border: 1px solid var(--accent);
@@ -512,6 +661,11 @@ select:focus {
 .btn-danger:hover {
   background: var(--accent);
   color: var(--text);
+}
+
+.btn-danger:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .btn-sm {
@@ -630,6 +784,11 @@ select:focus {
 .page-btn:hover {
   border-color: var(--accent);
   color: var(--text);
+}
+
+.page-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .page-btn-active {
@@ -776,6 +935,11 @@ select:focus {
   border-color: var(--accent);
 }
 
+.torrent-picker-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .torrent-picker-toggle.open {
   border-radius: var(--radius) var(--radius) 0 0;
   border-bottom-color: transparent;
@@ -805,12 +969,6 @@ select:focus {
   flex: 1;
   font-size: 13px;
   min-width: 0;
-}
-
-.torrent-category {
-  width: 120px;
-  font-size: 13px;
-  flex-shrink: 0;
 }
 
 .torrent-list {
@@ -851,6 +1009,11 @@ select:focus {
 .torrent-item:hover {
   border-color: var(--accent);
   background: var(--bg-hover);
+}
+
+.torrent-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .torrent-item:disabled {
@@ -1000,6 +1163,11 @@ select:focus {
 
 .file-item:hover {
   border-color: var(--accent);
+}
+
+.file-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .file-item-active {
