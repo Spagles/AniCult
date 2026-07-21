@@ -184,6 +184,14 @@
 
   // ── Helpers ────────────────────────────────────────────
 
+  async function safeJson(res) {
+    const ct = res.headers.get("content-type") || "";
+    if (!ct.includes("application/json")) {
+      throw new Error("Server is not running. Start it with: npm run dev");
+    }
+    return res.json();
+  }
+
   function esc(str) {
     const d = document.createElement("div");
     d.textContent = str;
@@ -835,7 +843,7 @@
         const res = await fetch(
           `/api/nyaa?q=${encodeURIComponent(searchInputVal.trim())}&c=${category}`,
         );
-        const data = await res.json();
+        const data = await safeJson(res);
         if (!res.ok) {
           const msg = data.error || "Search failed";
           if (msg.includes("timeout") || msg.includes("connect"))
@@ -870,7 +878,7 @@
         try {
           const res = await fetch(`/api/torrent?hash=${hash}`);
           if (res.ok) {
-            torrentStatus = await res.json();
+            torrentStatus = await safeJson(res);
             render();
             if (torrentStatus.progress >= 100) {
               clearInterval(statusInterval);
@@ -888,7 +896,7 @@
           try {
             const res = await fetch(`/api/torrent?hash=${hash}`);
             if (res.ok) {
-              const s = await res.json();
+              const s = await safeJson(res);
               torrentStatus = s;
               if (s.numPeers > 0 || s.progress > 0) {
                 resolve();
@@ -932,10 +940,10 @@
           body: JSON.stringify({ magnet: t.magnet }),
         });
         if (!res.ok) {
-          const d = await res.json().catch(() => ({}));
+          const d = await safeJson(res).catch(() => ({}));
           throw new Error(d.error || "Failed to start torrent");
         }
-        const data = await res.json();
+        const data = await safeJson(res);
         torrentInfo = data;
         const vf = data.files.filter((f) => VIDEO_RE.test(f.name));
         if (vf.length === 0)
