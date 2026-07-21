@@ -81,7 +81,10 @@ button {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 button:disabled {
@@ -1340,7 +1343,6 @@ select:focus {
   gap: 8px;
   margin-top: 12px;
 }
-
 
 @media (max-width: 768px) {
   .nav {
