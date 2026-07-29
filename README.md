@@ -33,11 +33,11 @@ No server required. Works entirely in the browser.
 
 ## Files
 
-| File         | What it does                                                        |
-| ------------ | ------------------------------------------------------------------- |
-| `index.html` | Nav, search bar, main container, footer                             |
-| `styles.css` | All styles — dark theme, responsive, components                     |
-| `app.js`     | SPA router, AniList API, embed player, rendering, localStorage      |
+| File         | What it does                                                   |
+| ------------ | -------------------------------------------------------------- |
+| `index.html` | Nav, search bar, main container, footer                        |
+| `styles.css` | All styles — dark theme, responsive, components                |
+| `app.js`     | SPA router, AniList API, embed player, rendering, localStorage |
 
 ## How It Works
 
