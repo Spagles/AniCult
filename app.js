@@ -491,19 +491,20 @@
   async function renderAnimeDetail(id) {
     const anime = await getAnimeById(id);
     const t = title(anime);
-    const altT =
-      anime.title.english && anime.title.romaji !== anime.title.english
-        ? anime.title.romaji
-        : anime.title.native || "";
+    const engT = anime.title.english;
+    const nativeT = anime.title.native;
+    const altT = engT && anime.title.romaji !== engT ? anime.title.romaji : nativeT || "";
     const img = cover(anime);
-    const banner = anime.bannerImage;
-    const totalEps =
-      anime.episodes ||
-      (anime.nextAiringEpisode ? anime.nextAiringEpisode.episode - 1 : 0);
+    const banner = anime.bannerImage || img;
+    const nextEp = anime.nextAiringEpisode?.episode;
+    const nextEpDate = anime.nextAiringEpisode?.airingAt;
+    const totalKnown = anime.episodes || nextEp || 0;
     const studio = anime.studios?.nodes?.[0]?.name || "Unknown";
     const desc = stripHtml(anime.description);
     const watched = getProgress(anime.id);
     const inList = isInWatchlist(anime.id);
+    const status = anime.status || "";
+    const isAiring = status === "RELEASING";
 
     const relations = (anime.relations?.edges || []).filter((e) =>
       ["SEQUEL", "PREQUEL", "SIDE_STORY", "PARENT"].includes(e.relationType),
@@ -511,55 +512,113 @@
 
     let html = "";
 
-    if (banner) {
-      html += `<div class="banner-section"><div class="banner-bg" style="background-image:url('${esc(banner)}')"></div><div class="banner-fade"></div></div>`;
-    }
-
-    html += `<div class="detail-page"><div class="detail-sidebar">
-      <img src="${esc(img)}" alt="${esc(t)}">
-      <div style="margin-top:12px"><button class="btn ${inList ? "btn-danger" : "btn-primary"}" style="width:100%" id="watchlist-btn">${inList ? "Remove from List" : "Add to Watchlist"}</button></div>
-      ${totalEps > 0 ? `<div style="margin-top:8px"><a href="#/watch/${anime.id}/1" class="btn btn-outline" style="width:100%;display:flex">${watched > 0 ? "Continue Ep " + (watched + 1) : "Start Watching"}</a></div>` : ""}
+    // Hero
+    html += `<div class="detail-hero">
+      <div class="detail-hero-bg" style="background-image:url('${esc(banner)}')"></div>
+      <div class="detail-hero-overlay"></div>
+      <div class="detail-hero-content">
+        <div class="detail-hero-cover"><img src="${esc(img)}" alt="${esc(t)}"></div>
+        <div class="detail-hero-info">
+          <div class="detail-hero-title">${esc(t)}</div>
+          ${altT ? `<div class="detail-hero-alt-title">${esc(altT)}</div>` : ""}
+          <div class="detail-hero-tags">
+            ${(anime.genres || []).slice(0, 4).map((g) => `<span>${esc(g)}</span>`).join("")}
+            ${anime.averageScore ? `<span class="tag-accent">${anime.averageScore}%</span>` : ""}
+            ${statusBadge(status)}
+          </div>
+          <div class="detail-hero-desc">${esc(desc)}</div>
+          <div class="detail-hero-actions">
+            ${totalKnown > 0 ? `<a href="#/watch/${anime.id}/${watched > 0 ? watched + 1 : 1}" class="btn btn-primary">${watched > 0 ? "Continue Ep " + (watched + 1) : "Start Watching"}</a>` : ""}
+            <button class="btn ${inList ? "btn-danger" : "btn-outline"}" id="watchlist-btn">${inList ? "Remove from Watchlist" : "Add to Watchlist"}</button>
+          </div>
+        </div>
+      </div>
     </div>`;
 
-    html += `<div class="detail-main">
-      <h1 class="detail-title">${esc(t)}</h1>
-      ${altT ? `<div class="detail-alt-title">${esc(altT)}</div>` : ""}
-      <div class="detail-meta">
-        ${(anime.genres || []).map((g) => `<span class="detail-tag">${esc(g)}</span>`).join("")}
-        ${anime.averageScore ? `<span class="detail-tag detail-tag-accent">${anime.averageScore}%</span>` : ""}
-      </div>
-      <div class="detail-info-grid">
-        <div class="detail-info-item"><label>Format</label><span>${anime.format || "—"}</span></div>
-        <div class="detail-info-item"><label>Status</label><span>${(anime.status || "—").replace(/_/g, " ")}</span></div>
-        <div class="detail-info-item"><label>Episodes</label><span>${anime.episodes || "?"}</span></div>
-        <div class="detail-info-item"><label>Duration</label><span>${anime.duration ? anime.duration + " min" : "—"}</span></div>
-        <div class="detail-info-item"><label>Season</label><span>${anime.season ? anime.season + " " + (anime.seasonYear || "") : "—"}</span></div>
-        <div class="detail-info-item"><label>Studio</label><span>${esc(studio)}</span></div>
-      </div>
-      <div class="detail-synopsis">${esc(desc)}</div>`;
+    html += `<div class="detail-body">`;
 
-    if (totalEps > 0) {
-      html += `<div><div class="episodes-header"><h2 class="episodes-title">Episodes</h2><span style="font-size:13px;color:var(--text-muted)">${watched}/${totalEps} watched</span></div>
-        <div class="episodes-grid">${Array.from(
-          { length: totalEps },
-          (_, i) => i + 1,
-        )
-          .map(
-            (ep) =>
-              `<a href="#/watch/${anime.id}/${ep}" class="ep-btn ${ep <= watched ? "ep-btn-watched" : ""} ${ep === watched + 1 ? "ep-btn-current" : ""}" id="ep-${ep}">${ep}</a>`,
-          )
-          .join("")}</div></div>`;
+    // Stats
+    html += `<div class="detail-stats">`;
+    const stats = [
+      { label: "Score", value: anime.averageScore ? anime.averageScore + "%" : "—", cls: "accent" },
+      { label: "Format", value: anime.format || "—" },
+      { label: "Status", value: status.replace(/_/g, " ") || "—", cls: isAiring ? "green" : status === "FINISHED" ? "blue" : "" },
+      { label: "Episodes", value: anime.episodes ? String(anime.episodes) : nextEp ? "?" : "—" },
+      { label: "Duration", value: anime.duration ? anime.duration + " min" : "—" },
+      { label: "Season", value: anime.season ? anime.season + " " + (anime.seasonYear || "") : "—" },
+      { label: "Studio", value: esc(studio) },
+    ];
+    stats.forEach((s) => {
+      html += `<div class="detail-stat"><div class="detail-stat-label">${s.label}</div><div class="detail-stat-value${s.cls ? " " + s.cls : ""}">${s.value}</div></div>`;
+    });
+    html += `</div>`;
+
+    // Synopsis
+    html += `<div class="detail-section">
+      <div class="detail-synopsis expandable" id="synopsis">${esc(desc)}</div>
+    </div>`;
+
+    // Episodes
+    if (totalKnown > 0) {
+      const progressPct = anime.episodes ? Math.round((watched / anime.episodes) * 100) : 0;
+      html += `<div class="detail-section"><div class="detail-section-title">Episodes</div>`;
+      html += `<div class="ep-progress">
+        <span class="ep-progress-text">${watched} ${isAiring && nextEp ? "of " + (nextEp - 1) : anime.episodes ? "of " + anime.episodes : ""} watched</span>
+        <div class="ep-progress-bar"><div class="ep-progress-fill" style="width:${progressPct}%"></div></div>
+      </div>`;
+      html += `<div class="episodes-grid">`;
+      for (let i = 1; i <= totalKnown; i++) {
+        const isUpcoming = nextEp && i >= nextEp && status !== "FINISHED";
+        const isNextEp = nextEp && i === nextEp && status !== "FINISHED";
+        const isAired = !isUpcoming || status === "FINISHED";
+        const isWatched = i <= watched;
+
+        let cls = "ep-btn";
+        let attrs = "";
+        let airLabel = "";
+
+        if (isWatched) {
+          cls += " ep-btn-watched";
+          attrs = `href="#/watch/${anime.id}/${i}"`;
+        } else if (isAired || !isUpcoming) {
+          cls += " ep-btn-aired";
+          attrs = `href="#/watch/${anime.id}/${i}"`;
+        } else {
+          cls += " ep-btn-upcoming";
+          if (isNextEp && nextEpDate) {
+            const diff = nextEpDate * 1000 - Date.now();
+            if (diff > 0) {
+              const days = Math.floor(diff / 86400000);
+              const hours = Math.floor((diff % 86400000) / 3600000);
+              if (days < 1) {
+                airLabel = hours > 0 ? `${hours}h` : "<1h";
+                cls += " ep-btn-today";
+              } else {
+                airLabel = `${days}d`;
+              }
+            }
+          }
+        }
+
+        const isSoon = airLabel && nextEpDate && (nextEpDate * 1000 - Date.now()) < 86400000;
+        if (attrs) {
+          html += `<a ${attrs} class="${cls}" id="ep-${i}">${i}${airLabel ? `<div class="ep-air-date${isSoon ? " today-date" : " upcoming-date"}">${esc(airLabel)}</div>` : ""}</a>`;
+        } else {
+          html += `<span class="${cls}" id="ep-${i}">${i}${airLabel ? `<div class="ep-air-date upcoming-date">${esc(airLabel)}</div>` : ""}</span>`;
+        }
+      }
+      html += `</div></div>`;
     }
 
+    // Related
     if (relations.length > 0) {
-      html += `<div style="margin-top:32px"><h2 class="section-title" style="margin-bottom:12px">Related</h2><div class="scroll-row">${relations
+      html += `<div class="detail-section related-section"><div class="detail-section-title">Related</div><div class="scroll-row">${relations
         .map((rel) => {
-          const r = rel.node,
-            rT = title(r);
-          return `<a href="#/anime/${r.id}" class="card" key="${r.id}">
-          <div class="card-image"><img src="${esc(r.coverImage.large)}" alt="${esc(rT)}">
+          const r = rel.node, rT = title(r);
+          return `<a href="#/anime/${r.id}" class="card">
+          <div class="card-image"><img src="${esc(r.coverImage.large)}" alt="${esc(rT)}" loading="lazy">
             ${r.averageScore ? `<span class="card-score">${r.averageScore}%</span>` : ""}
-            <span class="card-format">${esc(rel.relationType.replace(/_/g, " "))}</span>
+            <span class="related-badge">${esc(rel.relationType.replace(/_/g, " "))}</span>
           </div>
           <div class="card-body"><div class="card-title">${esc(rT)}</div></div>
         </a>`;
@@ -567,24 +626,44 @@
         .join("")}</div></div>`;
     }
 
-    html += `</div></div>`;
+    html += `</div>`;
     app.innerHTML = html;
 
+    // Synopsis expand
+    const synEl = document.getElementById("synopsis");
+    if (synEl && synEl.scrollHeight > synEl.clientHeight) {
+      synEl.addEventListener("click", () => synEl.classList.toggle("expanded"));
+    }
+
+    // Watchlist toggle
     const btn = document.getElementById("watchlist-btn");
     let currentInList = inList;
     btn.addEventListener("click", () => {
       if (currentInList) {
         removeFromWatchlist(anime.id);
         btn.textContent = "Add to Watchlist";
-        btn.className = "btn btn-primary";
+        btn.className = "btn btn-outline";
         currentInList = false;
       } else {
         addToWatchlist(anime);
-        btn.textContent = "Remove from List";
+        btn.textContent = "Remove from Watchlist";
         btn.className = "btn btn-danger";
         currentInList = true;
       }
     });
+  }
+
+  function statusBadge(s) {
+    const map = {
+      FINISHED: { cls: "finished", label: "Finished" },
+      RELEASING: { cls: "airing", label: "Airing" },
+      NOT_YET_RELEASED: { cls: "upcoming", label: "Unreleased" },
+      HIATUS: { cls: "dim", label: "Hiatus" },
+      CANCELLED: { cls: "dim", label: "Cancelled" },
+    };
+    const m = map[s];
+    if (!m) return "";
+    return `<span class="status-badge ${m.cls}">${m.label}</span>`;
   }
 
   // ── Watch Page (embed-based) ───────────────
@@ -651,15 +730,20 @@
       }
 
       if (totalEps > 0) {
-        html += `<div style="margin-top:24px"><h3 class="episodes-title" style="margin-bottom:12px">Episodes</h3><div class="episodes-grid">${Array.from(
-          { length: totalEps },
-          (_, i) => i + 1,
-        )
-          .map(
-            (ep) =>
-              `<a href="#/watch/${anime.id}/${ep}" class="ep-btn ${ep === episode ? "ep-btn-current" : ""}">${ep}</a>`,
-          )
-          .join("")}</div></div>`;
+        const nextEp = anime.nextAiringEpisode?.episode;
+        const isAiring = anime.status === "RELEASING";
+        html += `<div style="margin-top:24px"><h3 class="episodes-title" style="margin-bottom:12px">Episodes</h3><div class="episodes-grid">`;
+        for (let i = 1; i <= totalEps; i++) {
+          const isUpcoming = nextEp && i >= nextEp && isAiring;
+          const isWatched = i <= getProgress(anime.id);
+          let cls = "ep-btn";
+          if (i === episode) cls += " ep-btn-current";
+          else if (isWatched) cls += " ep-btn-watched";
+          else if (!isUpcoming) cls += " ep-btn-aired";
+          else cls += " ep-btn-upcoming";
+          html += `<a href="#/watch/${anime.id}/${i}" class="${cls}">${i}</a>`;
+        }
+        html += `</div></div>`;
       }
 
       html += `</div>`;
