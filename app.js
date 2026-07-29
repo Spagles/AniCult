@@ -2,13 +2,6 @@
   "use strict";
 
   const ANILIST_URL = "https://graphql.anilist.co";
-  const NYAA_RSS = "https://nyaa.si/?page=rss";
-
-  const CORS_PROXIES = [
-    (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-    (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-    (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-  ];
 
   const MEDIA_FIELDS_SMALL = `
     id
@@ -39,34 +32,19 @@
     }
   `;
 
-  const TRACKERS = [
-    "wss://tracker.openwebtorrent.com",
-    "wss://tracker.btorrent.xyz",
-    "wss://tracker.files.fm:7073/announce",
-    "wss://tracker.webtorrent.dev",
-    "wss://tracker.novg.net",
-    "wss://tracker.cluejack.info:6969",
-    "wss://tracker.lilithraws.org",
-  ];
-
   const app = document.getElementById("app");
   const searchInput = document.getElementById("nav-search-input");
   const searchForm = document.getElementById("nav-search-form");
 
   let currentPage = { destroy: null };
-  let wtClient = null;
 
-  // ── WebTorrent Client (browser) ────────────────────────
+  // ── Embed Providers ────────────────────────
 
-  function getWtClient() {
-    if (!wtClient) {
-      wtClient = new WebTorrent();
-      wtClient.on("error", (err) => console.error("[WebTorrent]", err.message));
-    }
-    return wtClient;
+  function makeEmbedUrl(episode, anilistId) {
+    return `https://megavid.buzz/ani/${anilistId}/${episode}/sub`;
   }
 
-  // ── AniList GraphQL ────────────────────────────────────
+  // ── AniList GraphQL ────────────────────────
 
   async function gql(query, variables = {}) {
     const res = await fetch(ANILIST_URL, {
@@ -122,90 +100,7 @@
     return (await gql(q, { id: parseInt(id) })).Media;
   }
 
-  // ── Nyaa RSS via CORS proxy ────────────────────────────
-
-  const NYAA_TRACKERS = [
-    "http://nyaa.tracker.wf:7777/announce",
-    "udp://open.stealth.si:80/announce",
-    "udp://tracker.opentrackr.org:1337/announce",
-    "udp://exodus.desync.com:6969/announce",
-    "udp://tracker.torrent.eu.org:451/announce",
-    "udp://tracker.moeking.me:6969/announce",
-    "http://tracker.anirena.com:8080/announce",
-    "udp://opentracker.i2p.rocks:6969/announce",
-    "https://tracker.bt-hash.com:443/announce",
-    "udp://bt1.archive.org:6969/announce",
-  ];
-
-  function buildMagnet(infoHash, title) {
-    const parts = [`magnet:?xt=urn:btih:${infoHash}`];
-    parts.push(`&dn=${encodeURIComponent(title)}`);
-    NYAA_TRACKERS.forEach((tr) => parts.push(`&tr=${encodeURIComponent(tr)}`));
-    return parts.join("");
-  }
-
-  function parseRSS(xml) {
-    const items = [];
-    const itemRegex = /<item>([\s\S]*?)<\/item>/g;
-    let match;
-    while ((match = itemRegex.exec(xml)) !== null) {
-      const content = match[1];
-      const get = (tag) => {
-        const escaped = tag.replace(":", "\\:");
-        const re = new RegExp(
-          `<${escaped}>(?:<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>|([\\s\\S]*?))<\\/${escaped}>`,
-        );
-        const m = content.match(re);
-        return m ? (m[1] || m[2] || "").trim() : "";
-      };
-      const infoHash = get("nyaa:infoHash");
-      const title = get("title");
-      if (!infoHash) continue;
-      items.push({
-        title,
-        link: get("link"),
-        pubDate: get("pubDate"),
-        seeders: parseInt(get("nyaa:seeders")) || 0,
-        leechers: parseInt(get("nyaa:leechers")) || 0,
-        downloads: parseInt(get("nyaa:downloads")) || 0,
-        infoHash,
-        size: get("nyaa:size"),
-        category: get("nyaa:category"),
-        trusted: get("nyaa:trusted") === "Yes",
-        remake: get("nyaa:remake") === "Yes",
-        magnet: buildMagnet(infoHash, title),
-      });
-    }
-    return items;
-  }
-
-  async function searchNyaa(query, category = "1_2") {
-    const url = `${NYAA_RSS}&c=${category}&q=${encodeURIComponent(query)}`;
-    let lastError = null;
-    for (const proxyFn of CORS_PROXIES) {
-      const proxyUrl = proxyFn(url);
-      try {
-        const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(15000) });
-        if (!res.ok) continue;
-        const text = await res.text();
-        if (!text.includes("<item>")) continue;
-        const results = parseRSS(text);
-        if (results.length === 0) continue;
-        results.sort((a, b) => b.seeders - a.seeders);
-        return results;
-      } catch (e) {
-        lastError = e;
-        continue;
-      }
-    }
-    throw new Error(
-      lastError && lastError.name === "TimeoutError"
-        ? "Nyaa search timed out. Try again in a moment."
-        : "Could not reach nyaa.si. All CORS proxies failed."
-    );
-  }
-
-  // ── Storage ────────────────────────────────────────────
+  // ── Storage ────────────────────────────────
 
   const KEYS = {
     watchlist: "anicult_watchlist",
@@ -289,7 +184,7 @@
     storageSet(KEYS.progress, p);
   }
 
-  // ── Helpers ────────────────────────────────────────────
+  // ── Helpers ────────────────────────────────
 
   function esc(str) {
     const d = document.createElement("div");
@@ -301,18 +196,6 @@
     return html
       ? html.replace(/<br\s*\/?>/g, "\n").replace(/<[^>]*>/g, "")
       : "No description available.";
-  }
-
-  function formatBytes(bytes) {
-    if (!bytes || bytes === 0) return "0 B";
-    const k = 1024,
-      sizes = ["B", "KB", "MB", "GB", "TB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
-  }
-
-  function formatSpeed(bps) {
-    return bps ? formatBytes(bps) + "/s" : "0 B/s";
   }
 
   function timeAgo(dateStr) {
@@ -340,10 +223,7 @@
     return anime.episodes ? anime.episodes + " eps" : null;
   }
 
-  const VIDEO_RE = /\.(mp4|mkv|webm|avi|m4v)$/i;
-  const PLAYABLE_RE = /\.(mp4|webm|m4v|ogv)$/i;
-
-  // ── SVG Icons ──────────────────────────────────────────
+  // ── SVG Icons ──────────────────────────────
 
   const icons = {
     arrowLeft: (s = 16) =>
@@ -372,7 +252,7 @@
       `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
   };
 
-  // ── Anime Card HTML ────────────────────────────────────
+  // ── Anime Card HTML ────────────────────────
 
   function cardHtml(anime) {
     const t = title(anime);
@@ -391,7 +271,7 @@
     </a>`;
   }
 
-  // ── Routing ────────────────────────────────────────────
+  // ── Routing ────────────────────────────────
 
   function parseHash() {
     const hash = location.hash.slice(1) || "/";
@@ -429,7 +309,7 @@
     window.scrollTo(0, 0);
   }
 
-  // ── Home Page ──────────────────────────────────────────
+  // ── Home Page ──────────────────────────────
 
   async function renderHome() {
     const [trending, recent, popular] = await Promise.all([
@@ -512,7 +392,7 @@
     currentPage.destroy = () => observer.disconnect();
   }
 
-  // ── Search Page ────────────────────────────────────────
+  // ── Search Page ────────────────────────────
 
   async function renderSearch(params) {
     const q = params.get("q") || "";
@@ -606,7 +486,7 @@
     app.innerHTML = html;
   }
 
-  // ── Anime Detail Page ──────────────────────────────────
+  // ── Anime Detail Page ──────────────────────
 
   async function renderAnimeDetail(id) {
     const anime = await getAnimeById(id);
@@ -707,7 +587,7 @@
     });
   }
 
-  // ── Watch Page (fully client-side WebTorrent) ──────────
+  // ── Watch Page (embed-based) ───────────────
 
   async function renderWatch(id, episode) {
     const anime = await getAnimeById(id);
@@ -725,31 +605,13 @@
     });
     setProgress(anime.id, episode);
 
-    let torrents = [],
-      searching = false,
-      searchInputVal = `${romajiT || t} ${String(episode).padStart(2, "0")}`;
-    let selectedTorrent = null,
-      loading = false,
-      torrentInfo = null,
-      torrentStatus = null;
-    let streamUrl = "",
-      selectedFileIndex = -1,
+    let sources = [],
+      activeSource = 0,
+      loading = true,
       error = null,
-      showPicker = true,
-      category = "1_2";
-    let statusInterval = null;
-    let activeTorrent = null;
+      embedUrl = "";
 
     function render() {
-      const videoFiles = torrentInfo
-        ? torrentInfo.files.filter((f) => VIDEO_RE.test(f.name))
-        : [];
-      const isPlayable = (name) => PLAYABLE_RE.test(name);
-      const currentFile =
-        torrentInfo && selectedFileIndex >= 0
-          ? torrentInfo.files[selectedFileIndex]
-          : null;
-
       let html = `<div class="player-container">`;
 
       html += `<div class="player-info"><div>
@@ -764,89 +626,28 @@
 
       html += `<div class="player-wrapper">`;
       if (loading) {
-        html += `<div class="loading"><div class="loading-spinner"></div><div>Connecting to peers...</div><div style="font-size:12px;color:var(--text-dim);margin-top:6px">Waiting for peers via WebRTC. This may take a moment.</div></div>`;
-      } else if (streamUrl) {
-        html += `<video id="video-player" src="${esc(streamUrl)}" controls autoplay></video>`;
+        html += `<div class="loading"><div class="loading-spinner"></div><div>Finding video sources...</div></div>`;
+      } else if (embedUrl) {
+        html += `<iframe src="${esc(embedUrl)}" allowfullscreen loading="lazy" allow="autoplay; fullscreen"></iframe>`;
       } else {
-        html += `<video id="video-player" controls style="display:none"></video><div class="loading" id="player-placeholder">${icons.download(32)}<div>Select a torrent below to start streaming</div></div>`;
+        html += `<div class="loading"><div class="loading-spinner"></div><div>No video sources available</div></div>`;
       }
       html += `</div>`;
 
-      if (torrentStatus && streamUrl) {
-        html += `<div class="stream-stats">
-          <span class="stat-item"><span class="stat-icon">${icons.download(14)}</span> <span class="stat-dl">${formatSpeed(torrentStatus.downloadSpeed)}</span></span>
-          <span class="stat-item"><span class="stat-icon">${icons.upload(14)}</span> <span class="stat-ul">${formatSpeed(torrentStatus.uploadSpeed)}</span></span>
-          <span class="stat-item"><span class="stat-icon">${icons.users(14)}</span> <span class="stat-peers">${torrentStatus.numPeers} peers</span></span>
-          <span class="stat-item stat-pct">${Math.round(torrentStatus.progress * 100)}%</span>
-          <div class="stream-progress-bar"><div class="stream-progress-fill" style="width:${Math.round(torrentStatus.progress * 100)}%"></div></div>
-        </div>`;
-      }
-
-      if (currentFile && !isPlayable(currentFile.name)) {
-        html += `<div class="mkv-warning"><strong>${icons.alert(16)} MKV Format</strong> — This video may not play in Chrome/Safari. It works in Firefox. Try selecting an MP4 release.</div>`;
-      }
-
-      if (torrentInfo && videoFiles.length > 1) {
-        html += `<div class="file-list"><h3 class="file-list-title">Select Video File</h3>`;
-        videoFiles.forEach((f) => {
-          html += `<button class="file-item ${selectedFileIndex === f.index ? "file-item-active" : ""}" data-file-index="${f.index}">
-            <span class="file-name">${esc(f.name)}</span>
-            <div class="file-meta"><span class="file-size">${formatBytes(f.size)}</span>${!isPlayable(f.name) ? `<span class="file-warning">MKV</span>` : ""}</div>
-          </button>`;
+      if (sources.length > 1) {
+        html += `<div class="player-source-list">`;
+        sources.forEach((s, i) => {
+          html += `<button class="player-source-btn ${i === activeSource ? "player-source-btn-active" : ""}" data-source-index="${i}">${esc(s.name)}</button>`;
         });
         html += `</div>`;
       }
 
-      html += `<button class="torrent-picker-toggle ${showPicker ? "open" : ""}" id="torrent-toggle">
-        <span>${selectedTorrent ? esc(selectedTorrent.title.substring(0, 60) + (selectedTorrent.title.length > 60 ? "..." : "")) : "Torrent Sources"}</span>
-        <span class="toggle-icon">${showPicker ? icons.chevronUp() : icons.chevronDown()}</span>
-      </button>`;
+      if (error) {
+        html += `<div class="embed-error">${esc(error)} <button class="btn btn-outline btn-sm" id="retry-btn">Retry</button></div>`;
+      }
 
-      if (showPicker) {
-        html += `<div class="torrent-picker">
-          <form class="torrent-search" id="nyaa-search-form">
-            <input type="text" value="${esc(searchInputVal)}" placeholder="Search nyaa.si for torrents..." id="nyaa-search">
-            <div class="custom-select" id="nyaa-category-select">
-              <button type="button" class="custom-select-trigger" id="nyaa-category-trigger">
-                <span>${category === "1_2" ? "English Subs" : category === "1_4" ? "Raw" : "All Anime"}</span>
-                <span class="custom-select-arrow">${icons.chevronDown(10)}</span>
-              </button>
-              <div class="custom-select-dropdown">
-                <button type="button" class="custom-select-option ${category === "1_2" ? "active" : ""}" data-value="1_2">English Subs</button>
-                <button type="button" class="custom-select-option ${category === "1_4" ? "active" : ""}" data-value="1_4">Raw</button>
-                <button type="button" class="custom-select-option ${category === "1_0" ? "active" : ""}" data-value="1_0">All Anime</button>
-              </div>
-            </div>
-            <button type="submit" class="btn btn-primary btn-sm">Search</button>
-          </form>`;
-
-        if (error && !searching)
-          html += `<div class="torrent-error">${esc(error)}</div>`;
-
-        if (searching) {
-          html += `<div class="loading" style="padding:24px"><div class="loading-spinner"></div><div>Searching nyaa.si...</div></div>`;
-        } else {
-          html += `<div class="torrent-list">${torrents
-            .map(
-              (t, i) =>
-                `<button class="torrent-item ${selectedTorrent && selectedTorrent.infoHash === t.infoHash ? "torrent-item-active" : ""}" data-torrent-index="${i}" ${loading ? "disabled" : ""}>
-              <div class="torrent-item-title">
-                ${t.trusted ? `<span class="torrent-badge trusted">${icons.check(12)} Trusted</span>` : ""}
-                ${t.remake ? `<span class="torrent-badge remake">Remake</span>` : ""}
-                ${esc(t.title)}
-              </div>
-              <div class="torrent-item-meta">
-                <span>${esc(t.size)}</span>
-                <span class="torrent-seeders">${icons.arrowUp()} ${t.seeders}</span>
-                <span class="torrent-leechers">${icons.arrowDown()} ${t.leechers}</span>
-                <span>${icons.download(12)} ${t.downloads}</span>
-                <span>${timeAgo(t.pubDate)}</span>
-              </div>
-            </button>`,
-            )
-            .join("")}</div>`;
-        }
-        html += `</div>`;
+      if (!loading && !embedUrl) {
+        html += `<div class="player-url-input"><input type="text" id="custom-embed-url" placeholder="Or paste an embed URL..." /><button class="btn btn-primary btn-sm" id="load-custom-url">Load</button></div>`;
       }
 
       if (totalEps > 0) {
@@ -863,227 +664,50 @@
 
       html += `</div>`;
       app.innerHTML = html;
-      bindEvents();
-    }
 
-    function bindEvents() {
-      const form = document.getElementById("nyaa-search-form");
-      if (form)
-        form.addEventListener("submit", (e) => {
-          e.preventDefault();
-          doSearch();
-        });
-
-      const catSelect = document.getElementById("nyaa-category-select");
-      const catTrigger = document.getElementById("nyaa-category-trigger");
-      if (catTrigger && catSelect) {
-        catTrigger.addEventListener("click", (e) => {
-          e.stopPropagation();
-          catSelect.classList.toggle("open");
-        });
-        catSelect.querySelectorAll(".custom-select-option").forEach((opt) => {
-          opt.addEventListener("click", () => {
-            category = opt.dataset.value;
-            catSelect.classList.remove("open");
-            doSearch();
-          });
-        });
-      }
-
-      const toggle = document.getElementById("torrent-toggle");
-      if (toggle)
-        toggle.addEventListener("click", () => {
-          showPicker = !showPicker;
-          render();
-        });
-
-      document.querySelectorAll("[data-torrent-index]").forEach((btn) => {
-        btn.addEventListener("click", () =>
-          selectTorrent(torrents[parseInt(btn.dataset.torrentIndex)]),
-        );
-      });
-
-      document.querySelectorAll("[data-file-index]").forEach((btn) => {
+      document.querySelectorAll("[data-source-index]").forEach((btn) => {
         btn.addEventListener("click", () => {
-          const idx = parseInt(btn.dataset.fileIndex);
-          pickFile(idx);
+          const idx = parseInt(btn.dataset.sourceIndex);
+          if (idx !== activeSource) {
+            activeSource = idx;
+            embedUrl = sources[idx].url;
+            render();
+          }
         });
       });
 
-      const si = document.getElementById("nyaa-search");
-      if (si)
-        si.addEventListener("input", (e) => {
-          searchInputVal = e.target.value;
+      const loadBtn = document.getElementById("load-custom-url");
+      if (loadBtn) {
+        loadBtn.addEventListener("click", () => {
+          const input = document.getElementById("custom-embed-url");
+          if (input && input.value.trim()) {
+            embedUrl = input.value.trim();
+            sources.push({ id: "custom", name: "Custom", url: embedUrl });
+            activeSource = sources.length - 1;
+            render();
+          }
         });
+      }
 
-      document.addEventListener("click", (e) => {
-        const sel = document.getElementById("nyaa-category-select");
-        if (sel && !sel.contains(e.target)) sel.classList.remove("open");
-      });
+      const retryBtn = document.getElementById("retry-btn");
+      if (retryBtn) retryBtn.addEventListener("click", discoverSources);
     }
 
-    async function doSearch() {
-      if (!searchInputVal.trim()) return;
-      searching = true;
-      error = null;
-      render();
-      try {
-        torrents = await searchNyaa(searchInputVal.trim(), category);
-        if (torrents.length === 0)
-          error = "No torrents found. Try adjusting your search query.";
-      } catch (e) {
-        error =
-          e.message || "Search failed. The CORS proxy may be unavailable.";
-        torrents = [];
-      }
-      searching = false;
+    function discoverSources() {
+      embedUrl = makeEmbedUrl(episode, id);
+      sources = [{ id: "megavid", name: "Megavid", url: embedUrl }];
+      activeSource = 0;
+      loading = false;
       render();
     }
 
-    function startStatusPolling() {
-      if (statusInterval) clearInterval(statusInterval);
-      statusInterval = setInterval(() => {
-        if (!activeTorrent) return;
-        torrentStatus = {
-          downloadSpeed: activeTorrent.downloadSpeed,
-          uploadSpeed: activeTorrent.uploadSpeed,
-          numPeers: activeTorrent.numPeers,
-          progress: activeTorrent.progress,
-          downloaded: activeTorrent.downloaded,
-          total: activeTorrent.length,
-        };
-        const statsEl = document.querySelector(".stream-stats");
-        if (statsEl) {
-          statsEl.querySelector(".stat-dl").textContent = formatSpeed(torrentStatus.downloadSpeed);
-          statsEl.querySelector(".stat-ul").textContent = formatSpeed(torrentStatus.uploadSpeed);
-          statsEl.querySelector(".stat-peers").textContent = torrentStatus.numPeers + " peers";
-          statsEl.querySelector(".stat-pct").textContent = Math.round(torrentStatus.progress * 100) + "%";
-          statsEl.querySelector(".stream-progress-fill").style.width = Math.round(torrentStatus.progress * 100) + "%";
-        }
-        if (activeTorrent.progress >= 1) { clearInterval(statusInterval); statusInterval = null; }
-      }, 2000);
-    }
-
-    function pickFile(fileIndex) {
-      if (!activeTorrent) return;
-      const file = activeTorrent.files[fileIndex];
-      if (!file) return;
-      selectedFileIndex = fileIndex;
-      activeTorrent.files.forEach((f, i) => { if (i !== fileIndex) f.deselect(); });
-      file.select();
-      loading = true;
-      streamUrl = "";
-      startStatusPolling();
-      render();
-
-      requestAnimationFrame(() => {
-        const videoEl = document.getElementById("video-player");
-        const placeholder = document.getElementById("player-placeholder");
-        if (!videoEl) return;
-        if (placeholder) placeholder.style.display = "none";
-        videoEl.style.display = "block";
-
-        if (PLAYABLE_RE.test(file.name)) {
-          file.renderTo(videoEl, { autoplay: true, controls: true }, (err) => {
-            if (err) {
-              console.error("renderTo failed, falling back to blob URL", err);
-              file.getBlobURL((err2, url) => {
-                if (!err2 && url) { streamUrl = url; loading = false; videoEl.src = url; videoEl.play().catch(() => {}); render(); }
-              });
-            } else {
-              loading = false;
-              streamUrl = "streaming";
-              render();
-            }
-          });
-        } else {
-          file.getBlobURL((err, url) => {
-            if (!err && url) { streamUrl = url; loading = false; videoEl.src = url; videoEl.play().catch(() => {}); render(); }
-          });
-        }
-      });
-    }
-
-    async function selectTorrent(t) {
-      selectedTorrent = t;
-      loading = true;
-      error = null;
-      torrentInfo = null;
-      streamUrl = "";
-      selectedFileIndex = -1;
-      torrentStatus = null;
-      if (statusInterval) {
-        clearInterval(statusInterval);
-        statusInterval = null;
-      }
-      if (activeTorrent) {
-        try {
-          activeTorrent.destroy();
-        } catch {}
-        activeTorrent = null;
-      }
-      render();
-
-      try {
-        const client = getWtClient();
-        activeTorrent = client.add(t.magnet, { announce: TRACKERS });
-
-        await new Promise((resolve, reject) => {
-          const timeout = setTimeout(
-            () => reject(new Error("Torrent timed out after 60s")),
-            60000,
-          );
-          activeTorrent.on("ready", () => {
-            clearTimeout(timeout);
-            resolve();
-          });
-          activeTorrent.on("error", (err) => {
-            clearTimeout(timeout);
-            reject(err);
-          });
-        });
-
-        const files = activeTorrent.files.map((f, i) => ({
-          name: f.name,
-          size: f.length,
-          index: i,
-        }));
-
-        torrentInfo = {
-          infoHash: activeTorrent.infoHash,
-          name: activeTorrent.name,
-          files,
-        };
-        const vf = files.filter((f) => VIDEO_RE.test(f.name));
-        if (vf.length === 0)
-          throw new Error("No video files found in this torrent.");
-
-        loading = false;
-        showPicker = false;
-        if (vf.length === 1) pickFile(vf[0].index);
-        render();
-      } catch (e) {
-        error = e.message;
-        selectedTorrent = null;
-        loading = false;
-        render();
-      }
-    }
-
-    doSearch();
     render();
+    discoverSources();
 
-    currentPage.destroy = () => {
-      if (statusInterval) clearInterval(statusInterval);
-      if (activeTorrent) {
-        try {
-          activeTorrent.destroy();
-        } catch {}
-      }
-    };
+    currentPage.destroy = () => {};
   }
 
-  // ── Watchlist Page ─────────────────────────────────────
+  // ── Watchlist Page ─────────────────────────
 
   function renderWatchlist() {
     const list = getWatchlist();
@@ -1129,7 +753,7 @@
     });
   }
 
-  // ── History Page ───────────────────────────────────────
+  // ── History Page ───────────────────────────
 
   function renderHistory() {
     const historyList = getHistory();
@@ -1184,7 +808,7 @@
       });
   }
 
-  // ── Init ───────────────────────────────────────────────
+  // ── Init ───────────────────────────────────
 
   searchForm.addEventListener("submit", (e) => {
     e.preventDefault();
