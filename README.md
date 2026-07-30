@@ -4,6 +4,11 @@
   A clean anime streaming experience — browse via AniList, watch via direct embed players.
 </p>
 
+<p align="center">
+  <a href="https://anicult.vercel.app/"><img alt="Vercel" src="https://img.shields.io/badge/Live%20Demo-vercel.app?style=flat&logo=vercel&label=anicult.vercel.app&labelColor=0a0a0a&color=e63946"></a>
+  <a href="https://github.com/aluukill/AniCult"><img alt="Stars" src="https://img.shields.io/github/stars/aluukill/AniCult?style=flat&logo=github&label=Stars&labelColor=0a0a0a&color=e63946"></a>
+</p>
+
 ---
 
 ## About
@@ -23,21 +28,29 @@ AniCult is a fully client-side single-page application. No server, no build step
 - **Infinite Scroll** — Intersection Observer for lazy-loading
 - **Dark UI** — Inter font, responsive, minimal
 
+## Live Demo
+
+**[anicult.vercel.app](https://anicult.vercel.app/)** — hosted on Vercel, no install required.
+
 ## Getting Started
 
 ```
 open index.html
 ```
 
-No server required. Works entirely in the browser.
+Or deploy your own: fork the repo and connect to Vercel — zero config.
 
 ## Files
 
-| File         | What it does                                                   |
-| ------------ | -------------------------------------------------------------- |
-| `index.html` | Nav, search bar, main container, footer                        |
-| `styles.css` | All styles — dark theme, responsive, components                |
-| `app.js`     | SPA router, AniList API, embed player, rendering, localStorage |
+| File           | What it does                                                   |
+| -------------- | -------------------------------------------------------------- |
+| `index.html`   | Nav, search bar, main container, SEO meta tags                 |
+| `styles.css`   | All styles — dark theme, responsive, components                |
+| `app.js`       | SPA router, AniList API, embed player, rendering, localStorage |
+| `favicon.svg`  | SVG favicon                                                    |
+| `vercel.json`  | Vercel deployment config                                       |
+| `robots.txt`   | Crawler instructions for search engines                        |
+| `sitemap.xml`  | XML sitemap for SEO                                            |
 
 ## How It Works
 
