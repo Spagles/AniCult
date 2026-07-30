@@ -493,7 +493,8 @@
     const t = title(anime);
     const engT = anime.title.english;
     const nativeT = anime.title.native;
-    const altT = engT && anime.title.romaji !== engT ? anime.title.romaji : nativeT || "";
+    const altT =
+      engT && anime.title.romaji !== engT ? anime.title.romaji : nativeT || "";
     const img = cover(anime);
     const banner = anime.bannerImage || img;
     const nextEp = anime.nextAiringEpisode?.episode;
@@ -522,7 +523,10 @@
           <div class="detail-hero-title">${esc(t)}</div>
           ${altT ? `<div class="detail-hero-alt-title">${esc(altT)}</div>` : ""}
           <div class="detail-hero-tags">
-            ${(anime.genres || []).slice(0, 4).map((g) => `<span>${esc(g)}</span>`).join("")}
+            ${(anime.genres || [])
+              .slice(0, 4)
+              .map((g) => `<span>${esc(g)}</span>`)
+              .join("")}
             ${anime.averageScore ? `<span class="tag-accent">${anime.averageScore}%</span>` : ""}
             ${statusBadge(status)}
           </div>
@@ -540,12 +544,31 @@
     // Stats
     html += `<div class="detail-stats">`;
     const stats = [
-      { label: "Score", value: anime.averageScore ? anime.averageScore + "%" : "—", cls: "accent" },
+      {
+        label: "Score",
+        value: anime.averageScore ? anime.averageScore + "%" : "—",
+        cls: "accent",
+      },
       { label: "Format", value: anime.format || "—" },
-      { label: "Status", value: status.replace(/_/g, " ") || "—", cls: isAiring ? "green" : status === "FINISHED" ? "blue" : "" },
-      { label: "Episodes", value: anime.episodes ? String(anime.episodes) : nextEp ? "?" : "—" },
-      { label: "Duration", value: anime.duration ? anime.duration + " min" : "—" },
-      { label: "Season", value: anime.season ? anime.season + " " + (anime.seasonYear || "") : "—" },
+      {
+        label: "Status",
+        value: status.replace(/_/g, " ") || "—",
+        cls: isAiring ? "green" : status === "FINISHED" ? "blue" : "",
+      },
+      {
+        label: "Episodes",
+        value: anime.episodes ? String(anime.episodes) : nextEp ? "?" : "—",
+      },
+      {
+        label: "Duration",
+        value: anime.duration ? anime.duration + " min" : "—",
+      },
+      {
+        label: "Season",
+        value: anime.season
+          ? anime.season + " " + (anime.seasonYear || "")
+          : "—",
+      },
       { label: "Studio", value: esc(studio) },
     ];
     stats.forEach((s) => {
@@ -560,7 +583,9 @@
 
     // Episodes
     if (totalKnown > 0) {
-      const progressPct = anime.episodes ? Math.round((watched / anime.episodes) * 100) : 0;
+      const progressPct = anime.episodes
+        ? Math.round((watched / anime.episodes) * 100)
+        : 0;
       html += `<div class="detail-section"><div class="detail-section-title">Episodes</div>`;
       html += `<div class="ep-progress">
         <span class="ep-progress-text">${watched} ${isAiring && nextEp ? "of " + (nextEp - 1) : anime.episodes ? "of " + anime.episodes : ""} watched</span>
@@ -600,7 +625,8 @@
           }
         }
 
-        const isSoon = airLabel && nextEpDate && (nextEpDate * 1000 - Date.now()) < 86400000;
+        const isSoon =
+          airLabel && nextEpDate && nextEpDate * 1000 - Date.now() < 86400000;
         if (attrs) {
           html += `<a ${attrs} class="${cls}" id="ep-${i}">${i}${airLabel ? `<div class="ep-air-date${isSoon ? " today-date" : " upcoming-date"}">${esc(airLabel)}</div>` : ""}</a>`;
         } else {
@@ -614,7 +640,8 @@
     if (relations.length > 0) {
       html += `<div class="detail-section related-section"><div class="detail-section-title">Related</div><div class="scroll-row">${relations
         .map((rel) => {
-          const r = rel.node, rT = title(r);
+          const r = rel.node,
+            rT = title(r);
           return `<a href="#/anime/${r.id}" class="card">
           <div class="card-image"><img src="${esc(r.coverImage.large)}" alt="${esc(rT)}" loading="lazy">
             ${r.averageScore ? `<span class="card-score">${r.averageScore}%</span>` : ""}
