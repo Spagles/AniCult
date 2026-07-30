@@ -38,13 +38,9 @@
 
   let currentPage = { destroy: null };
 
-  // ── Embed Providers ────────────────────────
-
   function makeEmbedUrl(episode, anilistId) {
     return `https://megavid.buzz/ani/${anilistId}/${episode}/sub`;
   }
-
-  // ── AniList GraphQL ────────────────────────
 
   async function gql(query, variables = {}) {
     const res = await fetch(ANILIST_URL, {
@@ -99,8 +95,6 @@
     const q = `query($id:Int){Media(id:$id,type:ANIME){${MEDIA_FIELDS}}}`;
     return (await gql(q, { id: parseInt(id) })).Media;
   }
-
-  // ── Storage ────────────────────────────────
 
   const KEYS = {
     watchlist: "anicult_watchlist",
@@ -184,8 +178,6 @@
     storageSet(KEYS.progress, p);
   }
 
-  // ── Helpers ────────────────────────────────
-
   function esc(str) {
     const d = document.createElement("div");
     d.textContent = str;
@@ -223,8 +215,6 @@
     return anime.episodes ? anime.episodes + " eps" : null;
   }
 
-  // ── SVG Icons ──────────────────────────────
-
   const icons = {
     arrowLeft: (s = 16) =>
       `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>`,
@@ -252,8 +242,6 @@
       `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
   };
 
-  // ── Anime Card HTML ────────────────────────
-
   function cardHtml(anime) {
     const t = title(anime);
     const img = cover(anime);
@@ -270,8 +258,6 @@
       <div class="card-body"><div class="card-title">${esc(t)}</div></div>
     </a>`;
   }
-
-  // ── Routing ────────────────────────────────
 
   function parseHash() {
     const hash = location.hash.slice(1) || "/";
@@ -308,8 +294,6 @@
 
     window.scrollTo(0, 0);
   }
-
-  // ── Home Page ──────────────────────────────
 
   async function renderHome() {
     const [trending, recent, popular] = await Promise.all([
@@ -391,8 +375,6 @@
     if (loader) observer.observe(loader);
     currentPage.destroy = () => observer.disconnect();
   }
-
-  // ── Search Page ────────────────────────────
 
   async function renderSearch(params) {
     const q = params.get("q") || "";
@@ -486,8 +468,6 @@
     app.innerHTML = html;
   }
 
-  // ── Anime Detail Page ──────────────────────
-
   async function renderAnimeDetail(id) {
     const anime = await getAnimeById(id);
     const t = title(anime);
@@ -513,7 +493,6 @@
 
     let html = "";
 
-    // Hero
     html += `<div class="detail-hero">
       <div class="detail-hero-bg" style="background-image:url('${esc(banner)}')"></div>
       <div class="detail-hero-overlay"></div>
@@ -541,7 +520,6 @@
 
     html += `<div class="detail-body">`;
 
-    // Stats
     html += `<div class="detail-stats">`;
     const stats = [
       {
@@ -576,12 +554,10 @@
     });
     html += `</div>`;
 
-    // Synopsis
     html += `<div class="detail-section">
       <div class="detail-synopsis expandable" id="synopsis">${esc(desc)}</div>
     </div>`;
 
-    // Episodes
     if (totalKnown > 0) {
       const progressPct = anime.episodes
         ? Math.round((watched / anime.episodes) * 100)
@@ -636,7 +612,6 @@
       html += `</div></div>`;
     }
 
-    // Related
     if (relations.length > 0) {
       html += `<div class="detail-section related-section"><div class="detail-section-title">Related</div><div class="scroll-row">${relations
         .map((rel) => {
@@ -656,13 +631,11 @@
     html += `</div>`;
     app.innerHTML = html;
 
-    // Synopsis expand
     const synEl = document.getElementById("synopsis");
     if (synEl && synEl.scrollHeight > synEl.clientHeight) {
       synEl.addEventListener("click", () => synEl.classList.toggle("expanded"));
     }
 
-    // Watchlist toggle
     const btn = document.getElementById("watchlist-btn");
     let currentInList = inList;
     btn.addEventListener("click", () => {
@@ -692,8 +665,6 @@
     if (!m) return "";
     return `<span class="status-badge ${m.cls}">${m.label}</span>`;
   }
-
-  // ── Watch Page (embed-based) ───────────────
 
   async function renderWatch(id, episode) {
     const anime = await getAnimeById(id);
@@ -818,8 +789,6 @@
     currentPage.destroy = () => {};
   }
 
-  // ── Watchlist Page ─────────────────────────
-
   function renderWatchlist() {
     const list = getWatchlist();
     let html = `<h1 class="section-title" style="margin-bottom:24px">My Watchlist</h1>`;
@@ -863,8 +832,6 @@
       });
     });
   }
-
-  // ── History Page ───────────────────────────
 
   function renderHistory() {
     const historyList = getHistory();
@@ -918,8 +885,6 @@
         renderHistory();
       });
   }
-
-  // ── Init ───────────────────────────────────
 
   searchForm.addEventListener("submit", (e) => {
     e.preventDefault();
