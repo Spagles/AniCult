@@ -9,6 +9,10 @@
   <a href="https://github.com/aluukill/AniCult"><img alt="Stars" src="https://img.shields.io/github/stars/aluukill/AniCult?style=flat&logo=github&label=Stars&labelColor=0a0a0a&color=e63946"></a>
 </p>
 
+<p align="center">
+  <img src="https://i.ibb.co.com/fz3yw7Vg/image.png" alt="AniCult screenshot" width="720">
+</p>
+
 ---
 
 ## About
