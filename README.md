@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://i.ibb.co.com/fz3yw7Vg/image.png" alt="AniCult screenshot" width="720">
+  <img src="screenshot.png" alt="AniCult screenshot" width="720">
 </p>
 
 ---
