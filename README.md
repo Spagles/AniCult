@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://anicult.vercel.app/"><img alt="Vercel" src="https://img.shields.io/badge/Live%20Demo-vercel.app?style=flat&logo=vercel&label=anicult.vercel.app&labelColor=0a0a0a&color=e63946"></a>
+  <a href="https://anicult.vercel.app/"><img alt="Live Demo" src="https://img.shields.io/badge/anicult.vercel.app-e63946?style=flat&label=Live%20Demo&labelColor=0a0a0a"></a>
   <a href="https://github.com/aluukill/AniCult"><img alt="Stars" src="https://img.shields.io/github/stars/aluukill/AniCult?style=flat&logo=github&label=Stars&labelColor=0a0a0a&color=e63946"></a>
 </p>
 
