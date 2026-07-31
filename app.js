@@ -774,10 +774,21 @@
         html += unavailableHtml();
       } else if (embedUrl) {
         html += `<iframe src="${esc(embedUrl)}" allowfullscreen loading="lazy" allow="autoplay; fullscreen"></iframe>`;
+        html += `<div class="episode-badge">Episode ${episode}</div>`;
       } else {
         html += unavailableHtml();
       }
       html += `</div>`;
+
+      if (isAiring && nextEp && nextEpDate && !epUnreleased) {
+        const diff = nextEpDate * 1000 - Date.now();
+        if (diff > 0) {
+          html += `<div class="watch-countdown">
+            <div class="watch-countdown-label">${icons.clock(14)} Next Episode ${nextEp}</div>
+            <div class="watch-countdown-timer">airs in <span id="next-ep-countdown">${esc(formatCountdown(nextEpDate))}</span></div>
+          </div>`;
+        }
+      }
 
       if (sources.length > 1) {
         html += `<div class="player-source-list">`;
@@ -867,11 +878,21 @@
 
     render();
 
-    if (epUnreleased && nextEpDate) {
+    const showCountdown = isAiring && nextEp && nextEpDate;
+    if (showCountdown) {
       const timer = setInterval(() => {
-        const el = document.getElementById("countdown-timer");
-        if (el) el.textContent = formatCountdown(nextEpDate);
-        else clearInterval(timer);
+        let alive = false;
+        const a = document.getElementById("countdown-timer");
+        if (a) {
+          a.textContent = formatCountdown(nextEpDate);
+          alive = true;
+        }
+        const b = document.getElementById("next-ep-countdown");
+        if (b) {
+          b.textContent = formatCountdown(nextEpDate);
+          alive = true;
+        }
+        if (!alive) clearInterval(timer);
       }, 1000);
       currentPage.destroy = () => clearInterval(timer);
     } else {
