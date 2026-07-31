@@ -13,6 +13,7 @@
 
   const MEDIA_FIELDS = `
     id
+    idMal
     title { romaji english native }
     coverImage { extraLarge large color }
     bannerImage description genres format status episodes duration
@@ -38,8 +39,10 @@
 
   let currentPage = { destroy: null };
 
-  function makeEmbedUrl(episode, anilistId) {
-    return `https://megavid.buzz/ani/${anilistId}/${episode}/sub`;
+  function makeEmbedUrl(episode, anilistId, lang = "sub", malId = null) {
+    const idType = malId ? "mal" : "ani";
+    const id = malId || anilistId;
+    return `https://megavid.buzz/${idType}/${id}/${episode}/${lang}`;
   }
 
   async function gql(query, variables = {}) {
@@ -195,19 +198,6 @@
       : "No description available.";
   }
 
-  function timeAgo(dateStr) {
-    if (!dateStr) return "";
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const days = Math.floor(diff / 86400000);
-    if (days > 365) return Math.floor(days / 365) + "y ago";
-    if (days > 30) return Math.floor(days / 30) + "mo ago";
-    if (days > 0) return days + "d ago";
-    const hours = Math.floor(diff / 3600000);
-    if (hours > 0) return hours + "h ago";
-    const mins = Math.floor(diff / 60000);
-    return mins > 0 ? mins + "m ago" : "just now";
-  }
-
   function title(anime) {
     return anime.title.english || anime.title.romaji;
   }
@@ -225,26 +215,8 @@
       `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>`,
     arrowRight: (s = 16) =>
       `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><polyline points="12 5 19 12 12 19"/></svg>`,
-    download: (s = 16) =>
-      `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
-    upload: (s = 16) =>
-      `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`,
-    users: (s = 16) =>
-      `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-    chevronUp: (s = 16) =>
-      `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>`,
-    chevronDown: (s = 16) =>
-      `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`,
     alert: (s = 16) =>
       `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
-    check: (s = 16) =>
-      `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
-    arrowUp: (s = 12) =>
-      `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>`,
-    arrowDown: (s = 12) =>
-      `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>`,
-    x: (s = 16) =>
-      `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
     clock: (s = 16) =>
       `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
   };
@@ -483,6 +455,7 @@
 
     let result;
     if (q) result = await searchAnime(q, page, 24, format || null, sort);
+    else if (sort === "POPULARITY_DESC") result = await getPopular(page, 24);
     else result = await getTrending(page, 24);
 
     const sortOpts = [
@@ -491,6 +464,7 @@
       { v: "POPULARITY_DESC", l: "Popularity" },
       { v: "SCORE_DESC", l: "Score" },
       { v: "START_DATE_DESC", l: "Newest" },
+      { v: "UPDATED_AT_DESC", l: "Recently Updated" },
     ];
     const fmtOpts = [
       { v: "", l: "All Formats" },
@@ -696,7 +670,7 @@
       for (let i = 1; i <= totalKnown; i++) {
         const isUpcoming = nextEp && i >= nextEp && status !== "FINISHED";
         const isNextEp = nextEp && i === nextEp && status !== "FINISHED";
-        const isAired = !isUpcoming || status === "FINISHED";
+        const isAired = !isUpcoming;
         const isWatched = i <= watched;
 
         let cls = "ep-btn";
@@ -830,7 +804,8 @@
       activeSource = 0,
       loading = true,
       error = null,
-      embedUrl = "";
+      embedUrl = "",
+      currentLang = "sub";
 
     function unavailableHtml() {
       if (notYetReleased) {
@@ -891,7 +866,14 @@
         }
       }
 
-      if (sources.length > 1) {
+      if (canWatch) {
+        html += `<div class="player-lang-toggle">
+          <button class="lang-btn ${currentLang === "sub" ? "lang-btn-active" : ""}" data-lang="sub">Sub</button>
+          <button class="lang-btn ${currentLang === "dub" ? "lang-btn-active" : ""}" data-lang="dub">Dub</button>
+        </div>`;
+      }
+
+      if (sources.length > 2) {
         html += `<div class="player-source-list">`;
         sources.forEach((s, i) => {
           html += `<button class="player-source-btn ${i === activeSource ? "player-source-btn-active" : ""}" data-source-index="${i}">${esc(s.name)}</button>`;
@@ -940,6 +922,16 @@
         });
       });
 
+      document.querySelectorAll("[data-lang]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const lang = btn.dataset.lang;
+          if (lang !== currentLang) {
+            currentLang = lang;
+            discoverSources();
+          }
+        });
+      });
+
       const loadBtn = document.getElementById("load-custom-url");
       if (loadBtn) {
         loadBtn.addEventListener("click", () => {
@@ -968,11 +960,17 @@
       embedUrl = "";
       sources = [];
       activeSource = 0;
-      render();
 
-      embedUrl = makeEmbedUrl(episode, id);
-      sources = [{ id: "megavid", name: "Megavid", url: embedUrl }];
-      activeSource = 0;
+      const malId = anime.idMal || null;
+      const subUrl = makeEmbedUrl(episode, id, "sub", malId);
+      const dubUrl = makeEmbedUrl(episode, id, "dub", malId);
+      sources = [
+        { id: "sub", name: "Sub", url: subUrl },
+        { id: "dub", name: "Dub", url: dubUrl },
+      ];
+      const langIdx = sources.findIndex((s) => s.id === currentLang);
+      activeSource = langIdx >= 0 ? langIdx : 0;
+      embedUrl = sources[activeSource].url;
       loading = false;
       render();
     }
@@ -984,22 +982,16 @@
       const timer = setInterval(() => {
         let alive = false;
         const a = document.getElementById("countdown-timer");
-        if (a) {
-          a.textContent = formatCountdown(nextEpDate);
-          alive = true;
-        }
+        if (a) { a.textContent = formatCountdown(nextEpDate); alive = true; }
         const b = document.getElementById("next-ep-countdown");
-        if (b) {
-          b.textContent = formatCountdown(nextEpDate);
-          alive = true;
-        }
+        if (b) { b.textContent = formatCountdown(nextEpDate); alive = true; }
         if (!alive) clearInterval(timer);
       }, 1000);
       currentPage.destroy = () => clearInterval(timer);
     } else {
-      discoverSources();
       currentPage.destroy = () => {};
     }
+    discoverSources();
   }
 
   function renderWatchlist() {
@@ -1029,7 +1021,7 @@
               <div class="watchlist-progress">Progress: ${watched} / ${eps || "?"}</div>
             </div>
           </a>
-          <button class="wl-remove-btn" data-id="${a.id}" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);color:var(--accent);border:1px solid var(--accent);border-radius:3px;font-size:10px;padding:2px 6px;z-index:2">Remove</button>
+          <button class="wl-remove-btn" data-id="${a.id}">Remove</button>
         </div>`;
         })
         .join("")}</div>`;
@@ -1059,7 +1051,7 @@
       const latest = historyList[0];
       if (latest) {
         html += `<div class="continue-card" id="continue-watching-card">
-          <div class="history-thumb"><img src="${esc(latest.coverImage.large || latest.coverImage.extraLarge)}" alt="${esc(latest.title)}"></div>
+          <div class="history-thumb"><img src="${esc(latest.coverImage.extraLarge || latest.coverImage.large)}" alt="${esc(latest.title)}"></div>
           <div class="history-info">
             <div class="continue-label">Continue Watching</div>
             <h2 class="history-title" style="font-size:16px;font-weight:600">${esc(latest.title)}</h2>
@@ -1078,7 +1070,7 @@
             minute: "2-digit",
           });
           return `<div class="history-item" id="history-item-${i}">
-          <div class="history-thumb"><img src="${esc(item.coverImage.large || item.coverImage.extraLarge)}" alt="${esc(item.title)}"></div>
+          <div class="history-thumb"><img src="${esc(item.coverImage.extraLarge || item.coverImage.large)}" alt="${esc(item.title)}"></div>
           <div class="history-info">
             <a href="#/anime/${item.animeId}" class="history-title" style="font-weight:600;display:block">${esc(item.title)}</a>
             <div class="history-ep">Episode ${item.episode}</div>
