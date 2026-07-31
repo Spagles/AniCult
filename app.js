@@ -372,6 +372,63 @@
 
     app.innerHTML = html;
 
+    let heroIndex = 0;
+    let heroTimer = null;
+    const heroCount = topAiring.length;
+    const slides = document.querySelectorAll(".hero-slide");
+    const dots = document.querySelectorAll(".hero-dot");
+    const slideshowEl = document.getElementById("hero-slideshow");
+
+    function showSlide(n) {
+      heroIndex = (n + heroCount) % heroCount;
+      slides.forEach((s, i) => s.classList.toggle("active", i === heroIndex));
+      dots.forEach((d, i) => d.classList.toggle("active", i === heroIndex));
+    }
+
+    function startHero() {
+      clearInterval(heroTimer);
+      heroTimer = setInterval(() => showSlide(heroIndex + 1), 6000);
+    }
+
+    if (slideshowEl && heroCount > 1) {
+      const prevBtn = document.getElementById("hero-prev");
+      const nextBtn = document.getElementById("hero-next");
+      if (prevBtn) prevBtn.addEventListener("click", () => {
+        showSlide(heroIndex - 1);
+        startHero();
+      });
+      if (nextBtn) nextBtn.addEventListener("click", () => {
+        showSlide(heroIndex + 1);
+        startHero();
+      });
+      dots.forEach((d) =>
+        d.addEventListener("click", () => {
+          showSlide(parseInt(d.dataset.dot));
+          startHero();
+        }),
+      );
+      slideshowEl.addEventListener("mouseenter", () =>
+        clearInterval(heroTimer),
+      );
+      slideshowEl.addEventListener("mouseleave", startHero);
+
+      let touchStartX = null;
+      slideshowEl.addEventListener("touchstart", (e) => {
+        touchStartX = e.changedTouches[0].clientX;
+        startHero();
+      });
+      slideshowEl.addEventListener("touchend", (e) => {
+        if (touchStartX === null) return;
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        touchStartX = null;
+        if (Math.abs(dx) > 40) {
+          showSlide(heroIndex + (dx < 0 ? 1 : -1));
+          startHero();
+        }
+      });
+      startHero();
+    }
+
     let popPage = 2;
     let popHasNext = popular.pageInfo.hasNextPage;
     let popLoading = false;
@@ -861,48 +918,7 @@
       }
 
       html += `</div>`;
-    app.innerHTML = html;
-
-    let heroIndex = 0;
-    let heroTimer = null;
-    const heroCount = topAiring.length;
-    const slides = document.querySelectorAll(".hero-slide");
-    const dots = document.querySelectorAll(".hero-dot");
-    const slideshowEl = document.getElementById("hero-slideshow");
-
-    function showSlide(n) {
-      heroIndex = (n + heroCount) % heroCount;
-      slides.forEach((s, i) => s.classList.toggle("active", i === heroIndex));
-      dots.forEach((d, i) => d.classList.toggle("active", i === heroIndex));
-    }
-
-    function startHero() {
-      clearInterval(heroTimer);
-      heroTimer = setInterval(() => showSlide(heroIndex + 1), 6000);
-    }
-
-    if (slideshowEl && heroCount > 1) {
-      document.getElementById("hero-prev").addEventListener("click", () => {
-        showSlide(heroIndex - 1);
-        startHero();
-      });
-      document.getElementById("hero-next").addEventListener("click", () => {
-        showSlide(heroIndex + 1);
-        startHero();
-      });
-      dots.forEach((d) =>
-        d.addEventListener("click", () => {
-          showSlide(parseInt(d.dataset.dot));
-          startHero();
-        }),
-      );
-      slideshowEl.addEventListener("mouseenter", () =>
-        clearInterval(heroTimer),
-      );
-      slideshowEl.addEventListener("mouseleave", startHero);
-      slideshowEl.addEventListener("touchstart", startHero);
-      startHero();
-    }
+      app.innerHTML = html;
 
       document.querySelectorAll("[data-source-index]").forEach((btn) => {
         btn.addEventListener("click", () => {
