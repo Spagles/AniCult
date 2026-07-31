@@ -24,13 +24,13 @@ AniCult is a fully client-side single-page application. No server, no build step
 
 ## Features
 
-- **Anime Discovery** — Trending, popular, and recently updated anime from AniList
-- **Search & Filters** — Full-text search with sort and format filters
-- **Anime Details** — Synopsis, genres, episode grid, related anime
-- **Embed Streaming** — Instant video playback via Megavid embed (sub/dub)
+- **Anime Discovery** — Hero slideshow of top airing anime, plus trending, popular, and recently updated rows from AniList
+- **Search & Filters** — Full-text search with 6 sort options (relevance, trending, popularity, score, newest, recently updated) and format filters (TV, Movie, OVA, ONA, Special)
+- **Anime Details** — Synopsis, genres, stats, episode grid with air dates, related anime
+- **Embed Streaming** — Instant playback via a themed Megavid embed (site-accent red, autoplay) with sub/dub toggle, auto-next on episode completion, and error handling with retry
+- **Continue Watching** — Smart CTA that only suggests aired episodes, with rewatch fallback when you're caught up
 - **Watchlist & History** — LocalStorage persistence with episode progress tracking
-- **Infinite Scroll** — Intersection Observer for lazy-loading
-- **Dark UI** — Inter font, responsive, minimal
+- **Responsive UI** — Dark glassmorphism theme, hamburger nav, mobile-optimized hero and player
 
 ## Live Demo
 
@@ -58,11 +58,11 @@ Or deploy your own: fork the repo and connect to Vercel — zero config.
 
 ## How It Works
 
-1. Browse anime on the home page (trending, popular, recent)
-2. Click into a detail page, pick an episode
-3. Megavid embed loads instantly using the AniList ID
-4. Video plays in an iframe with subtitle support
-5. History and progress save to localStorage
+1. Browse anime on the home page (hero slideshow, trending, popular, recent)
+2. Click into a detail page — pick the next aired episode from the grid
+3. Megavid embed loads instantly using the AniList ID (MAL ID fallback for older titles)
+4. Video plays in an iframe with sub/dub toggle and auto-advances to the next episode when finished
+5. History, progress, and watchlist save to localStorage
 
 ## License
 
