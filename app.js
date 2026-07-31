@@ -390,7 +390,7 @@
 
     function startHero() {
       clearInterval(heroTimer);
-      heroTimer = setInterval(() => showSlide(heroIndex + 1), 6000);
+      heroTimer = setInterval(() => showSlide(heroIndex + 1), 3000);
     }
 
     if (slideshowEl && heroCount > 1) {

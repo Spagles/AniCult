@@ -1808,6 +1808,7 @@ select:focus {
     position: relative;
     inset: auto;
     min-height: 420px;
+    align-items: flex-start;
   }
 
   .hero-slide-content {
@@ -1818,14 +1819,23 @@ select:focus {
   }
 
   .hero-rank {
-    font-size: 56px;
-    letter-spacing: -3px;
+    position: absolute;
+    top: 24px;
+    left: 16px;
+    z-index: 3;
+    font-size: 24px;
+    font-weight: 800;
     line-height: 1;
-    margin-bottom: 0;
+    font-style: normal;
+    letter-spacing: 0;
+    margin: 0;
     opacity: 1;
-    text-shadow:
-      0 0 30px rgba(230, 57, 70, 0.6),
-      0 2px 8px rgba(0, 0, 0, 0.8);
+    color: #fff;
+    background: var(--accent);
+    padding: 5px 10px;
+    border-radius: 6px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    text-shadow: none;
   }
 
   .hero-slide-main {
