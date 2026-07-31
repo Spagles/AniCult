@@ -1555,6 +1555,7 @@ select:focus {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .hero-slide-tags .tag-accent {
@@ -1742,9 +1743,12 @@ select:focus {
   }
 
   .hero-slide-tags {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     overflow: hidden;
-    height: 22px;
+    min-height: 22px;
+    max-height: 66px;
+    max-width: 100%;
+    min-width: 0;
     margin-bottom: 8px;
   }
 
