@@ -339,7 +339,10 @@
                 <div class="hero-slide-badge">Now Airing</div>
                 <div class="hero-slide-title">${esc(t)}</div>
                 <div class="hero-slide-tags">
-                  ${(anime.genres || []).slice(0, 3).map((g) => `<span>${esc(g)}</span>`).join("")}
+                  ${(anime.genres || [])
+                    .slice(0, 3)
+                    .map((g) => `<span>${esc(g)}</span>`)
+                    .join("")}
                   ${anime.averageScore ? `<span class="tag-accent">${anime.averageScore}%</span>` : ""}
                 </div>
                 <div class="hero-slide-desc">${esc(desc)}</div>
@@ -393,14 +396,16 @@
     if (slideshowEl && heroCount > 1) {
       const prevBtn = document.getElementById("hero-prev");
       const nextBtn = document.getElementById("hero-next");
-      if (prevBtn) prevBtn.addEventListener("click", () => {
-        showSlide(heroIndex - 1);
-        startHero();
-      });
-      if (nextBtn) nextBtn.addEventListener("click", () => {
-        showSlide(heroIndex + 1);
-        startHero();
-      });
+      if (prevBtn)
+        prevBtn.addEventListener("click", () => {
+          showSlide(heroIndex - 1);
+          startHero();
+        });
+      if (nextBtn)
+        nextBtn.addEventListener("click", () => {
+          showSlide(heroIndex + 1);
+          startHero();
+        });
       dots.forEach((d) =>
         d.addEventListener("click", () => {
           showSlide(parseInt(d.dataset.dot));
@@ -668,12 +673,16 @@
           const days = Math.floor(diff / 86400000);
           const hours = Math.floor((diff % 86400000) / 3600000);
           const mins = Math.floor((diff % 3600000) / 60000);
-          const countdown = days > 0 ? `${days}d ${hours}h ${mins}m` : `${hours}h ${mins}m`;
-          const dateStr = new Date(nextEpDate * 1000).toLocaleDateString(undefined, {
-            weekday: "short",
-            month: "short",
-            day: "numeric",
-          });
+          const countdown =
+            days > 0 ? `${days}d ${hours}h ${mins}m` : `${hours}h ${mins}m`;
+          const dateStr = new Date(nextEpDate * 1000).toLocaleDateString(
+            undefined,
+            {
+              weekday: "short",
+              month: "short",
+              day: "numeric",
+            },
+          );
           html += `<div class="next-ep-banner">
             <div class="next-ep-info">
               <div class="next-ep-label">${icons.clock(12)} Next Episode</div>

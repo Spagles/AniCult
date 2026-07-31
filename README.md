@@ -46,15 +46,15 @@ Or deploy your own: fork the repo and connect to Vercel — zero config.
 
 ## Files
 
-| File           | What it does                                                   |
-| -------------- | -------------------------------------------------------------- |
-| `index.html`   | Nav, search bar, main container, SEO meta tags                 |
-| `styles.css`   | All styles — dark theme, responsive, components                |
-| `app.js`       | SPA router, AniList API, embed player, rendering, localStorage |
-| `favicon.svg`  | SVG favicon                                                    |
-| `vercel.json`  | Vercel deployment config                                       |
-| `robots.txt`   | Crawler instructions for search engines                        |
-| `sitemap.xml`  | XML sitemap for SEO                                            |
+| File          | What it does                                                   |
+| ------------- | -------------------------------------------------------------- |
+| `index.html`  | Nav, search bar, main container, SEO meta tags                 |
+| `styles.css`  | All styles — dark theme, responsive, components                |
+| `app.js`      | SPA router, AniList API, embed player, rendering, localStorage |
+| `favicon.svg` | SVG favicon                                                    |
+| `vercel.json` | Vercel deployment config                                       |
+| `robots.txt`  | Crawler instructions for search engines                        |
+| `sitemap.xml` | XML sitemap for SEO                                            |
 
 ## How It Works
 
