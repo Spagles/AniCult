@@ -96,6 +96,11 @@
     return (await gql(q, { id: parseInt(id) })).Media;
   }
 
+  async function getTopAiring(page = 1, perPage = 10) {
+    const q = `query($page:Int,$perPage:Int){Page(page:$page,perPage:$perPage){media(type:ANIME,status:RELEASING,sort:POPULARITY_DESC){id title{romaji english} coverImage{extraLarge large} bannerImage description genres format status episodes averageScore nextAiringEpisode{airingAt episode}}}}`;
+    return (await gql(q, { page, perPage })).Page.media;
+  }
+
   const KEYS = {
     watchlist: "anicult_watchlist",
     history: "anicult_history",
@@ -298,38 +303,65 @@
   }
 
   async function renderHome() {
-    const [trending, recent, popular] = await Promise.all([
+    const [topAiring, trending, recent, popular] = await Promise.all([
+      getTopAiring(),
       getTrending(1, 20),
       getRecentlyUpdated(1, 20),
       getPopular(1, 20),
     ]);
 
-    const hero = trending.media[0];
-    const heroT = hero ? title(hero) : "";
-
     let html = "";
 
-    if (hero) {
-      html += `<div class="banner-section">
-        <div class="banner-bg" style="background-image:url('${esc(hero.bannerImage || cover(hero))}')"></div>
-        <div class="banner-fade"></div>
-        <div class="banner-content">
-          <div class="banner-cover"><img src="${esc(cover(hero))}" alt="${esc(heroT)}"></div>
-          <div class="banner-info">
-            <div class="banner-title">${esc(heroT)}</div>
-            ${
-              hero.genres
-                ? `<div class="banner-genres">${hero.genres
-                    .slice(0, 4)
-                    .map((g) => `<span>${esc(g)}</span>`)
-                    .join("")}</div>`
-                : ""
-            }
-            ${hero.description ? `<div class="banner-desc">${hero.description.replace(/<br\s*\/?>/g, " ")}</div>` : ""}
-            <div class="banner-actions"><a href="#/anime/${hero.id}" class="btn btn-primary">View Details</a></div>
+    if (topAiring.length > 0) {
+      html += `<div class="hero-slideshow" id="hero-slideshow">`;
+      topAiring.forEach((anime, i) => {
+        const t = title(anime);
+        const bg = anime.bannerImage || cover(anime);
+        const desc = stripHtml(anime.description || "");
+        const nxt = anime.nextAiringEpisode;
+        const aired = nxt ? nxt.episode - 1 : anime.episodes || "?";
+        let airMeta = "";
+        if (nxt) {
+          const diff = nxt.airingAt * 1000 - Date.now();
+          airMeta =
+            diff > 0
+              ? `Next Ep ${nxt.episode} in ${formatCountdown(nxt.airingAt)}`
+              : `Next Ep ${nxt.episode} soon`;
+        }
+        html += `<div class="hero-slide ${i === 0 ? "active" : ""}" data-index="${i}">
+          <div class="hero-slide-bg" style="background-image:url('${esc(bg)}')"></div>
+          <div class="hero-slide-overlay"></div>
+          <div class="hero-slide-content">
+            <div class="hero-rank">#${i + 1}</div>
+            <div class="hero-slide-main">
+              <div class="hero-slide-cover"><img src="${esc(cover(anime))}" alt="${esc(t)}"></div>
+              <div class="hero-slide-info">
+                <div class="hero-slide-badge">Now Airing</div>
+                <div class="hero-slide-title">${esc(t)}</div>
+                <div class="hero-slide-tags">
+                  ${(anime.genres || []).slice(0, 3).map((g) => `<span>${esc(g)}</span>`).join("")}
+                  ${anime.averageScore ? `<span class="tag-accent">${anime.averageScore}%</span>` : ""}
+                </div>
+                <div class="hero-slide-desc">${esc(desc)}</div>
+                <div class="hero-slide-meta">${anime.format || "TV"} · ${aired} eps aired${airMeta ? " · " + esc(airMeta) : ""}</div>
+                <div class="hero-slide-actions">
+                  <a href="#/anime/${anime.id}" class="btn btn-primary">View Details</a>
+                  ${aired > 0 ? `<a href="#/watch/${anime.id}/1" class="btn btn-outline">Watch Now</a>` : ""}
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>`;
+        </div>`;
+      });
+      html += `<button class="hero-arrow prev" id="hero-prev" aria-label="Previous slide">${icons.arrowLeft(18)}</button>`;
+      html += `<button class="hero-arrow next" id="hero-next" aria-label="Next slide">${icons.arrowRight(18)}</button>`;
+      html += `<div class="hero-dots">${topAiring
+        .map(
+          (_, i) =>
+            `<button class="hero-dot ${i === 0 ? "active" : ""}" data-dot="${i}" aria-label="Slide ${i + 1}"></button>`,
+        )
+        .join("")}</div>`;
+      html += `</div>`;
     }
 
     html += `<section class="section"><div class="section-header"><h2 class="section-title">Trending Now</h2><a href="#/search?sort=TRENDING_DESC" class="section-link">View All</a></div><div class="scroll-row">${trending.media.map(cardHtml).join("")}</div></section>`;
@@ -375,7 +407,10 @@
     );
 
     if (loader) observer.observe(loader);
-    currentPage.destroy = () => observer.disconnect();
+    currentPage.destroy = () => {
+      if (heroTimer) clearInterval(heroTimer);
+      observer.disconnect();
+    };
   }
 
   async function renderSearch(params) {
@@ -826,7 +861,48 @@
       }
 
       html += `</div>`;
-      app.innerHTML = html;
+    app.innerHTML = html;
+
+    let heroIndex = 0;
+    let heroTimer = null;
+    const heroCount = topAiring.length;
+    const slides = document.querySelectorAll(".hero-slide");
+    const dots = document.querySelectorAll(".hero-dot");
+    const slideshowEl = document.getElementById("hero-slideshow");
+
+    function showSlide(n) {
+      heroIndex = (n + heroCount) % heroCount;
+      slides.forEach((s, i) => s.classList.toggle("active", i === heroIndex));
+      dots.forEach((d, i) => d.classList.toggle("active", i === heroIndex));
+    }
+
+    function startHero() {
+      clearInterval(heroTimer);
+      heroTimer = setInterval(() => showSlide(heroIndex + 1), 6000);
+    }
+
+    if (slideshowEl && heroCount > 1) {
+      document.getElementById("hero-prev").addEventListener("click", () => {
+        showSlide(heroIndex - 1);
+        startHero();
+      });
+      document.getElementById("hero-next").addEventListener("click", () => {
+        showSlide(heroIndex + 1);
+        startHero();
+      });
+      dots.forEach((d) =>
+        d.addEventListener("click", () => {
+          showSlide(parseInt(d.dataset.dot));
+          startHero();
+        }),
+      );
+      slideshowEl.addEventListener("mouseenter", () =>
+        clearInterval(heroTimer),
+      );
+      slideshowEl.addEventListener("mouseleave", startHero);
+      slideshowEl.addEventListener("touchstart", startHero);
+      startHero();
+    }
 
       document.querySelectorAll("[data-source-index]").forEach((btn) => {
         btn.addEventListener("click", () => {
