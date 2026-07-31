@@ -42,7 +42,7 @@
   function makeEmbedUrl(episode, anilistId, lang = "sub", malId = null) {
     const idType = malId ? "mal" : "ani";
     const id = malId || anilistId;
-    return `https://megavid.buzz/${idType}/${id}/${episode}/${lang}`;
+    return `https://megavid.buzz/${idType}/${id}/${episode}/${lang}?color=%23e63946&autoplay=true`;
   }
 
   async function gql(query, variables = {}) {
@@ -57,14 +57,24 @@
     return json.data;
   }
 
+  async function browseAnime(
+    page = 1,
+    perPage = 20,
+    sort = "TRENDING_DESC",
+    format = null,
+  ) {
+    const q = `query($page:Int,$perPage:Int,$sort:[MediaSort],$format:MediaFormat){Page(page:$page,perPage:$perPage){pageInfo{total currentPage lastPage hasNextPage}media(type:ANIME,sort:$sort,format:$format){${MEDIA_FIELDS_SMALL}}}}`;
+    const variables = { page, perPage, sort: [sort] };
+    if (format) variables.format = format;
+    return (await gql(q, variables)).Page;
+  }
+
   async function getTrending(page = 1, perPage = 20) {
-    const q = `query($page:Int,$perPage:Int){Page(page:$page,perPage:$perPage){pageInfo{total currentPage lastPage hasNextPage}media(type:ANIME,sort:TRENDING_DESC){${MEDIA_FIELDS_SMALL}}}}`;
-    return (await gql(q, { page, perPage })).Page;
+    return browseAnime(page, perPage, "TRENDING_DESC");
   }
 
   async function getPopular(page = 1, perPage = 20) {
-    const q = `query($page:Int,$perPage:Int){Page(page:$page,perPage:$perPage){pageInfo{total currentPage lastPage hasNextPage}media(type:ANIME,sort:POPULARITY_DESC){${MEDIA_FIELDS_SMALL}}}}`;
-    return (await gql(q, { page, perPage })).Page;
+    return browseAnime(page, perPage, "POPULARITY_DESC");
   }
 
   async function getRecentlyUpdated(page = 1, perPage = 20) {
@@ -455,8 +465,7 @@
 
     let result;
     if (q) result = await searchAnime(q, page, 24, format || null, sort);
-    else if (sort === "POPULARITY_DESC") result = await getPopular(page, 24);
-    else result = await getTrending(page, 24);
+    else result = await browseAnime(page, 24, sort, format || null);
 
     const sortOpts = [
       { v: "SEARCH_MATCH", l: "Relevance" },
@@ -559,10 +568,23 @@
     const inList = isInWatchlist(anime.id);
     const status = anime.status || "";
     const isAiring = status === "RELEASING";
+    const airedEps = isAiring && nextEp ? nextEp - 1 : anime.episodes || 0;
 
     const relations = (anime.relations?.edges || []).filter((e) =>
       ["SEQUEL", "PREQUEL", "SIDE_STORY", "PARENT"].includes(e.relationType),
     );
+
+    let ctaHtml = "";
+    if (totalKnown > 0 && airedEps > 0) {
+      const resumeEp = watched + 1;
+      if (watched > 0 && resumeEp <= airedEps) {
+        ctaHtml = `<a href="#/watch/${anime.id}/${resumeEp}" class="btn btn-primary">Continue Ep ${resumeEp}</a>`;
+      } else if (watched > 0) {
+        ctaHtml = `<a href="#/watch/${anime.id}/1" class="btn btn-primary">Rewatch Ep 1</a>`;
+      } else {
+        ctaHtml = `<a href="#/watch/${anime.id}/1" class="btn btn-primary">Start Watching</a>`;
+      }
+    }
 
     let html = "";
 
@@ -584,7 +606,7 @@
           </div>
           <div class="detail-hero-desc">${esc(desc)}</div>
           <div class="detail-hero-actions">
-            ${totalKnown > 0 ? `<a href="#/watch/${anime.id}/${watched > 0 ? watched + 1 : 1}" class="btn btn-primary">${watched > 0 ? "Continue Ep " + (watched + 1) : "Start Watching"}</a>` : ""}
+            ${ctaHtml}
             <button class="btn ${inList ? "btn-danger" : "btn-outline"}" id="watchlist-btn">${inList ? "Remove from Watchlist" : "Add to Watchlist"}</button>
           </div>
         </div>
@@ -949,6 +971,24 @@
       if (retryBtn) retryBtn.addEventListener("click", discoverSources);
     }
 
+    function onPlayerMessage(e) {
+      const d = e.data;
+      if (!d || d.channel !== "kisskh") return;
+      const iframe = app.querySelector("iframe");
+      if (!iframe || e.source !== iframe.contentWindow) return;
+      if (d.event === "complete") {
+        if (
+          episode < totalEps &&
+          (!isAiring || !nextEp || episode + 1 < nextEp)
+        ) {
+          location.hash = `#/watch/${anime.id}/${episode + 1}`;
+        }
+      } else if (d.event === "error" && !error) {
+        error = d.message || "The video failed to load. Please try another source.";
+        render();
+      }
+    }
+
     function discoverSources() {
       if (!canWatch) {
         loading = false;
@@ -978,19 +1018,21 @@
     render();
 
     const showCountdown = isAiring && nextEp && nextEpDate;
-    if (showCountdown) {
-      const timer = setInterval(() => {
-        let alive = false;
-        const a = document.getElementById("countdown-timer");
-        if (a) { a.textContent = formatCountdown(nextEpDate); alive = true; }
-        const b = document.getElementById("next-ep-countdown");
-        if (b) { b.textContent = formatCountdown(nextEpDate); alive = true; }
-        if (!alive) clearInterval(timer);
-      }, 1000);
-      currentPage.destroy = () => clearInterval(timer);
-    } else {
-      currentPage.destroy = () => {};
-    }
+    const timer = showCountdown
+      ? setInterval(() => {
+          let alive = false;
+          const a = document.getElementById("countdown-timer");
+          if (a) { a.textContent = formatCountdown(nextEpDate); alive = true; }
+          const b = document.getElementById("next-ep-countdown");
+          if (b) { b.textContent = formatCountdown(nextEpDate); alive = true; }
+          if (!alive) clearInterval(timer);
+        }, 1000)
+      : null;
+    window.addEventListener("message", onPlayerMessage);
+    currentPage.destroy = () => {
+      if (timer) clearInterval(timer);
+      window.removeEventListener("message", onPlayerMessage);
+    };
     discoverSources();
   }
 
