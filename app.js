@@ -240,6 +240,8 @@
       `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>`,
     x: (s = 16) =>
       `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+    clock: (s = 16) =>
+      `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
   };
 
   function cardHtml(anime) {
@@ -567,6 +569,28 @@
         <span class="ep-progress-text">${watched} ${isAiring && nextEp ? "of " + (nextEp - 1) : anime.episodes ? "of " + anime.episodes : ""} watched</span>
         <div class="ep-progress-bar"><div class="ep-progress-fill" style="width:${progressPct}%"></div></div>
       </div>`;
+
+      if (isAiring && nextEp && nextEpDate) {
+        const diff = nextEpDate * 1000 - Date.now();
+        if (diff > 0) {
+          const days = Math.floor(diff / 86400000);
+          const hours = Math.floor((diff % 86400000) / 3600000);
+          const mins = Math.floor((diff % 3600000) / 60000);
+          const countdown = days > 0 ? `${days}d ${hours}h ${mins}m` : `${hours}h ${mins}m`;
+          const dateStr = new Date(nextEpDate * 1000).toLocaleDateString(undefined, {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+          });
+          html += `<div class="next-ep-banner">
+            <div class="next-ep-info">
+              <div class="next-ep-label">${icons.clock(12)} Next Episode</div>
+              <div class="next-ep-title">Episode ${nextEp} airs in <strong>${countdown}</strong></div>
+            </div>
+            <div class="next-ep-date">${dateStr}</div>
+          </div>`;
+        }
+      }
       html += `<div class="episodes-grid">`;
       for (let i = 1; i <= totalKnown; i++) {
         const isUpcoming = nextEp && i >= nextEp && status !== "FINISHED";
@@ -666,27 +690,69 @@
     return `<span class="status-badge ${m.cls}">${m.label}</span>`;
   }
 
+  function formatCountdown(airingAt) {
+    const diff = airingAt * 1000 - Date.now();
+    if (diff <= 0) return "Airing now";
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins = Math.floor((diff % 3600000) / 60000);
+    const secs = Math.floor((diff % 60000) / 1000);
+    if (days > 0) return `${days}d ${hours}h ${mins}m`;
+    if (hours > 0) return `${hours}h ${mins}m ${secs}s`;
+    return `${mins}m ${secs}s`;
+  }
+
   async function renderWatch(id, episode) {
     const anime = await getAnimeById(id);
     const t = title(anime);
-    const romajiT = anime.title.romaji;
     const totalEps =
       anime.episodes ||
       (anime.nextAiringEpisode ? anime.nextAiringEpisode.episode - 1 : 0);
+    const nextEp = anime.nextAiringEpisode?.episode;
+    const nextEpDate = anime.nextAiringEpisode?.airingAt;
+    const isAiring = anime.status === "RELEASING";
+    const notYetReleased = anime.status === "NOT_YET_RELEASED";
+    const epUnreleased = isAiring && nextEp && episode >= nextEp;
+    const canWatch = !notYetReleased && !epUnreleased;
 
-    addToHistory({
-      animeId: anime.id,
-      title: t,
-      coverImage: anime.coverImage,
-      episode,
-    });
-    setProgress(anime.id, episode);
+    if (canWatch) {
+      addToHistory({
+        animeId: anime.id,
+        title: t,
+        coverImage: anime.coverImage,
+        episode,
+      });
+      setProgress(anime.id, episode);
+    }
 
     let sources = [],
       activeSource = 0,
       loading = true,
       error = null,
       embedUrl = "";
+
+    function unavailableHtml() {
+      if (notYetReleased) {
+        return `<div class="player-unavailable">
+          <div class="unavailable-icon">${icons.clock(36)}</div>
+          <div class="unavailable-title">Not Available Yet</div>
+          <div class="unavailable-text">"${esc(t)}" has not been released online yet. It will be added to AniCult as soon as it airs on streaming platforms.</div>
+        </div>`;
+      }
+      if (epUnreleased) {
+        return `<div class="player-unavailable">
+          <div class="unavailable-icon">${icons.clock(36)}</div>
+          <div class="unavailable-title">Episode ${episode} hasn't aired yet</div>
+          <div class="unavailable-countdown">Airs in <span id="countdown-timer">${esc(formatCountdown(nextEpDate))}</span></div>
+          <div class="unavailable-text">This episode becomes available here as soon as it airs on streaming platforms.</div>
+        </div>`;
+      }
+      return `<div class="player-unavailable">
+        <div class="unavailable-icon">${icons.alert(36)}</div>
+        <div class="unavailable-title">No Video Sources</div>
+        <div class="unavailable-text">This title isn't currently available on streaming platforms. It will be added as soon as it becomes available.</div>
+      </div>`;
+    }
 
     function render() {
       let html = `<div class="player-container">`;
@@ -695,19 +761,21 @@
         <a href="#/anime/${anime.id}" class="player-title">${esc(t)}</a>
         <div class="player-episode">Episode ${episode}</div>
       </div><div class="player-nav">`;
-      if (episode > 1)
+      if (episode > 1 && (!isAiring || !nextEp || episode - 1 < nextEp))
         html += `<a href="#/watch/${anime.id}/${episode - 1}" class="btn btn-outline btn-sm">${icons.arrowLeft()} Prev</a>`;
-      if (episode < totalEps)
+      if (episode < totalEps && (!isAiring || !nextEp || episode + 1 < nextEp))
         html += `<a href="#/watch/${anime.id}/${episode + 1}" class="btn btn-primary btn-sm">Next ${icons.arrowRight()}</a>`;
       html += `</div></div>`;
 
       html += `<div class="player-wrapper">`;
-      if (loading) {
+      if (loading && canWatch) {
         html += `<div class="loading"><div class="loading-spinner"></div><div>Finding video sources...</div></div>`;
+      } else if (!canWatch) {
+        html += unavailableHtml();
       } else if (embedUrl) {
         html += `<iframe src="${esc(embedUrl)}" allowfullscreen loading="lazy" allow="autoplay; fullscreen"></iframe>`;
       } else {
-        html += `<div class="loading"><div class="loading-spinner"></div><div>No video sources available</div></div>`;
+        html += unavailableHtml();
       }
       html += `</div>`;
 
@@ -723,13 +791,11 @@
         html += `<div class="embed-error">${esc(error)} <button class="btn btn-outline btn-sm" id="retry-btn">Retry</button></div>`;
       }
 
-      if (!loading && !embedUrl) {
+      if (!loading && !embedUrl && canWatch) {
         html += `<div class="player-url-input"><input type="text" id="custom-embed-url" placeholder="Or paste an embed URL..." /><button class="btn btn-primary btn-sm" id="load-custom-url">Load</button></div>`;
       }
 
       if (totalEps > 0) {
-        const nextEp = anime.nextAiringEpisode?.episode;
-        const isAiring = anime.status === "RELEASING";
         html += `<div style="margin-top:24px"><h3 class="episodes-title" style="margin-bottom:12px">Episodes</h3><div class="episodes-grid">`;
         for (let i = 1; i <= totalEps; i++) {
           const isUpcoming = nextEp && i >= nextEp && isAiring;
@@ -739,7 +805,11 @@
           else if (isWatched) cls += " ep-btn-watched";
           else if (!isUpcoming) cls += " ep-btn-aired";
           else cls += " ep-btn-upcoming";
-          html += `<a href="#/watch/${anime.id}/${i}" class="${cls}">${i}</a>`;
+          if (isUpcoming) {
+            html += `<span class="${cls}" title="Not yet aired">${i}</span>`;
+          } else {
+            html += `<a href="#/watch/${anime.id}/${i}" class="${cls}">${i}</a>`;
+          }
         }
         html += `</div></div>`;
       }
@@ -776,6 +846,18 @@
     }
 
     function discoverSources() {
+      if (!canWatch) {
+        loading = false;
+        render();
+        return;
+      }
+      loading = true;
+      error = null;
+      embedUrl = "";
+      sources = [];
+      activeSource = 0;
+      render();
+
       embedUrl = makeEmbedUrl(episode, id);
       sources = [{ id: "megavid", name: "Megavid", url: embedUrl }];
       activeSource = 0;
@@ -784,9 +866,18 @@
     }
 
     render();
-    discoverSources();
 
-    currentPage.destroy = () => {};
+    if (epUnreleased && nextEpDate) {
+      const timer = setInterval(() => {
+        const el = document.getElementById("countdown-timer");
+        if (el) el.textContent = formatCountdown(nextEpDate);
+        else clearInterval(timer);
+      }, 1000);
+      currentPage.destroy = () => clearInterval(timer);
+    } else {
+      discoverSources();
+      currentPage.destroy = () => {};
+    }
   }
 
   function renderWatchlist() {
@@ -895,6 +986,29 @@
     }
   });
 
-  window.addEventListener("hashchange", route);
+  const navToggle = document.getElementById("nav-toggle");
+  const navLinks = document.getElementById("nav-links");
+  function closeMenu() {
+    navLinks.classList.remove("open");
+    navToggle.classList.remove("open");
+    navToggle.setAttribute("aria-expanded", "false");
+  }
+  navToggle.addEventListener("click", () => {
+    const open = navLinks.classList.toggle("open");
+    navToggle.classList.toggle("open", open);
+    navToggle.setAttribute("aria-expanded", String(open));
+  });
+  navLinks.addEventListener("click", (e) => {
+    if (e.target.closest("a")) closeMenu();
+  });
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".nav") && navLinks.classList.contains("open"))
+      closeMenu();
+  });
+
+  window.addEventListener("hashchange", () => {
+    if (navLinks.classList.contains("open")) closeMenu();
+    route();
+  });
   route();
 })();
