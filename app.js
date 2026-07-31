@@ -984,7 +984,8 @@
           location.hash = `#/watch/${anime.id}/${episode + 1}`;
         }
       } else if (d.event === "error" && !error) {
-        error = d.message || "The video failed to load. Please try another source.";
+        error =
+          d.message || "The video failed to load. Please try another source.";
         render();
       }
     }
@@ -1022,9 +1023,15 @@
       ? setInterval(() => {
           let alive = false;
           const a = document.getElementById("countdown-timer");
-          if (a) { a.textContent = formatCountdown(nextEpDate); alive = true; }
+          if (a) {
+            a.textContent = formatCountdown(nextEpDate);
+            alive = true;
+          }
           const b = document.getElementById("next-ep-countdown");
-          if (b) { b.textContent = formatCountdown(nextEpDate); alive = true; }
+          if (b) {
+            b.textContent = formatCountdown(nextEpDate);
+            alive = true;
+          }
           if (!alive) clearInterval(timer);
         }, 1000)
       : null;

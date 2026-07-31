@@ -43,8 +43,16 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image:
-    radial-gradient(ellipse at 20% 0%, rgba(230, 57, 70, 0.04) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 100%, rgba(230, 57, 70, 0.03) 0%, transparent 50%);
+    radial-gradient(
+      ellipse at 20% 0%,
+      rgba(230, 57, 70, 0.04) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 80% 100%,
+      rgba(230, 57, 70, 0.03) 0%,
+      transparent 50%
+    );
 }
 
 ::selection {
@@ -116,7 +124,9 @@ select {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  transition: border-color var(--transition), box-shadow var(--transition);
+  transition:
+    border-color var(--transition),
+    box-shadow var(--transition);
 }
 
 input::placeholder {
@@ -1669,6 +1679,7 @@ select:focus {
     padding: 24px 16px;
     flex-direction: column;
     align-items: flex-start;
+    justify-content: center;
     gap: 10px;
   }
 
@@ -1704,6 +1715,7 @@ select:focus {
   .hero-slide-main {
     width: 100%;
     gap: 16px;
+    align-items: center;
   }
 
   .hero-slide-cover {
@@ -1755,20 +1767,7 @@ select:focus {
   }
 
   .hero-arrow {
-    display: flex;
-    width: 36px;
-    height: 36px;
-    opacity: 0.85;
-    background: rgba(8, 8, 12, 0.65);
-    backdrop-filter: blur(8px);
-  }
-
-  .hero-arrow.prev {
-    left: 8px;
-  }
-
-  .hero-arrow.next {
-    right: 8px;
+    display: none;
   }
 
   .hero-dots {
