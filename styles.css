@@ -1417,7 +1417,7 @@ select:focus {
   inset: 0;
   background-size: cover;
   background-position: center 25%;
-  opacity: 0.25;
+  opacity: 0.85;
   transition: transform 7s ease;
 }
 
@@ -1625,7 +1625,7 @@ select:focus {
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 6px;
+  gap: 8px;
   z-index: 20;
 }
 
@@ -1633,7 +1633,7 @@ select:focus {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.35);
   border: none;
   cursor: pointer;
   padding: 0;
@@ -1692,8 +1692,18 @@ select:focus {
     text-shadow: none;
   }
 
+  .hero-slide-overlay {
+    background: linear-gradient(
+      180deg,
+      rgba(10, 10, 10, 0.42) 0%,
+      rgba(10, 10, 10, 0.6) 60%,
+      var(--bg) 100%
+    );
+  }
+
   .hero-slide-main {
     width: 100%;
+    gap: 16px;
   }
 
   .hero-slide-cover {
@@ -1701,7 +1711,12 @@ select:focus {
   }
 
   .hero-slide-info {
-    padding-bottom: 60px;
+    min-width: 0;
+  }
+
+  .hero-slide-badge {
+    height: 15px;
+    overflow: hidden;
   }
 
   .hero-slide-title {
@@ -1709,36 +1724,34 @@ select:focus {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    min-height: 44px;
     font-size: 18px;
     margin-bottom: 8px;
   }
 
   .hero-slide-tags {
+    flex-wrap: nowrap;
+    overflow: hidden;
+    height: 22px;
     margin-bottom: 8px;
   }
 
   .hero-slide-desc {
+    height: 39px;
     font-size: 12px;
     margin-bottom: 8px;
   }
 
   .hero-slide-meta {
+    height: 15px;
+    white-space: nowrap;
+    overflow: hidden;
     font-size: 11px;
     margin-bottom: 10px;
   }
 
   .hero-slide-actions {
-    position: absolute;
-    left: 16px;
-    bottom: 16px;
-    z-index: 3;
     gap: 8px;
-  }
-
-  .hero-dots {
-    right: 16px;
-    left: auto;
-    transform: none;
   }
 
   .hero-arrow {
