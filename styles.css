@@ -136,7 +136,6 @@ input::placeholder {
 input:focus,
 select:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
 .nav {
@@ -286,12 +285,10 @@ select:focus {
   font-size: 14px;
   font-weight: 500;
   transition: all var(--transition);
-  box-shadow: 0 2px 8px rgba(230, 57, 70, 0.2);
 }
 
 .nav-search button:hover {
   background: var(--accent-hover);
-  box-shadow: 0 4px 16px rgba(230, 57, 70, 0.3);
 }
 
 .main {
@@ -478,7 +475,6 @@ select:focus {
   background: var(--accent);
   color: var(--text);
   border-color: var(--accent);
-  box-shadow: 0 2px 8px rgba(230, 57, 70, 0.3);
 }
 
 .btn {
@@ -503,18 +499,15 @@ select:focus {
 .btn-primary {
   background: var(--accent);
   color: var(--text);
-  box-shadow: 0 2px 12px rgba(230, 57, 70, 0.3);
 }
 
 .btn-primary:hover {
   background: var(--accent-hover);
-  box-shadow: 0 4px 20px rgba(230, 57, 70, 0.4);
   transform: translateY(-1px);
 }
 
 .btn-primary:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(230, 57, 70, 0.3);
 }
 
 .btn-outline {
@@ -538,7 +531,6 @@ select:focus {
 .btn-danger:hover {
   background: var(--accent);
   color: var(--text);
-  box-shadow: 0 2px 12px rgba(230, 57, 70, 0.3);
 }
 
 .btn-sm {
@@ -742,7 +734,6 @@ select:focus {
   background: var(--accent);
   color: var(--text);
   border-color: var(--accent);
-  box-shadow: 0 2px 8px rgba(230, 57, 70, 0.3);
 }
 
 .filters {
@@ -1658,9 +1649,7 @@ select:focus {
   color: var(--accent);
   opacity: 0.9;
   flex-shrink: 0;
-  text-shadow:
-    0 0 40px rgba(230, 57, 70, 0.5),
-    0 2px 10px rgba(0, 0, 0, 0.7);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
   margin-bottom: -10px;
 }
 
@@ -1850,7 +1839,6 @@ select:focus {
   background: var(--accent);
   width: 22px;
   border-radius: 4px;
-  box-shadow: 0 0 8px rgba(230, 57, 70, 0.4);
 }
 
 @media (max-width: 768px) {
