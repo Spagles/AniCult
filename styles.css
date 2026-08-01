@@ -982,15 +982,19 @@ select:focus {
 }
 
 .about-row svg,
-.about-portfolio-logo {
+.about-row img {
   flex-shrink: 0;
 }
 
-.about-portfolio-logo {
+.about-row img {
   width: 28px;
   height: 28px;
   border-radius: 6px;
   object-fit: cover;
+}
+
+.about-social-logo {
+  filter: brightness(0) invert(1);
 }
 
 .about-card-text {
