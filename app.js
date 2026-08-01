@@ -1102,7 +1102,7 @@
       const latest = historyList[0];
       if (latest) {
         html += `<div class="continue-card" id="continue-watching-card">
-          <div class="history-thumb"><img src="${esc(latest.coverImage.extraLarge || latest.coverImage.large)}" alt="${esc(latest.title)}"></div>
+          <div class="history-thumb"><img src="${esc(latest.coverImage?.extraLarge || latest.coverImage?.large || "")}" alt="${esc(latest.title)}"></div>
           <div class="history-info">
             <div class="continue-label">Continue Watching</div>
             <h2 class="history-title" style="font-size:16px;font-weight:600">${esc(latest.title)}</h2>
@@ -1121,7 +1121,7 @@
             minute: "2-digit",
           });
           return `<div class="history-item" id="history-item-${i}">
-          <div class="history-thumb"><img src="${esc(item.coverImage.extraLarge || item.coverImage.large)}" alt="${esc(item.title)}"></div>
+          <div class="history-thumb"><img src="${esc(item.coverImage?.extraLarge || item.coverImage?.large || "")}" alt="${esc(item.title)}"></div>
           <div class="history-info">
             <a href="#/anime/${item.animeId}" class="history-title" style="font-weight:600;display:block">${esc(item.title)}</a>
             <div class="history-ep">Episode ${item.episode}</div>
