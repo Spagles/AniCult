@@ -1158,8 +1158,9 @@
     html += `<li>Fully responsive — built for desktop and mobile</li>`;
     html += `</ul>`;
 
-    html += `<h2 class="about-subtitle">Connect</h2>`;
     html += `<div class="about-connect">`;
+    html += `<div class="about-card-col">`;
+    html += `<div class="about-dev-header"><span class="about-dev-badge">Founded by</span></div>`;
     html += `<div class="about-discord">`;
     html += `<img class="about-discord-banner" src="https://cdn.discordapp.com/banners/1455877276007796738/a_5d74cf1372c78893f1ac6c1f3170a7ba.gif?size=1024" alt="Dacca Cult banner" loading="lazy">`;
     html += `<div class="about-discord-body">`;
@@ -1168,8 +1169,9 @@
     html += `<div class="about-discord-meta"><span>237 members</span><span class="about-sep">&middot;</span><span class="about-online"><i class="presence-dot"></i>27 online</span></div>`;
     html += `<p class="about-discord-desc">We value freedom of speech but it must not be confused with or to justify hate speech. Space for community bonding and dedicated rooms for various discussion.</p>`;
     html += `<a href="https://discord.gg/aR5pXyVG3V" target="_blank" rel="noopener noreferrer" class="btn btn-primary">${discordIcon}Join Server</a>`;
-    html += `</div></div>`;
+    html += `</div></div></div>`;
     html += `<div class="about-card-col">`;
+    html += `<div class="about-dev-header"><span class="about-dev-badge">Main Developer of AniCult</span></div>`;
     html += `<a class="about-row" href="https://github.com/aluukill/AniCult" target="_blank" rel="noopener noreferrer">${githubIcon}<span class="about-card-text"><span class="about-link-title">Source on GitHub</span><span class="about-link-text">Star the project, report issues, or contribute</span></span></a>`;
     html += `<a class="about-row" href="https://linktr.ee/aluukill" target="_blank" rel="noopener noreferrer"><img class="about-social-logo" src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/logos/linktree-hrggdeqdzll06zjl9h6j.png/linktree-bafynmeua3noot52xbu71.png?_a=DATAiZAAZAA0" alt="Linktree" loading="lazy"><span class="about-card-text"><span class="about-link-title">Linktree</span><span class="about-link-text">@aluukill</span></span></a>`;
     html += `<a class="about-row" href="https://syedtanvir.vercel.app" target="_blank" rel="noopener noreferrer"><img class="about-portfolio-logo" src="https://syedtanvir.vercel.app/assets/icon.png" alt="Portfolio" loading="lazy"><span class="about-card-text"><span class="about-link-title">Portfolio</span><span class="about-link-text">syedtanvir.vercel.app</span></span></a>`;
