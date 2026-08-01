@@ -1168,7 +1168,7 @@
     html += `<div class="about-discord-name">Dacca Cult</div>`;
     html += `<div class="about-discord-meta"><span>237 members</span><span class="about-sep">&middot;</span><span class="about-online"><i class="presence-dot"></i>27 online</span></div>`;
     html += `<p class="about-discord-desc">We value freedom of speech, ensuring a welcoming space for community bonding with dedicated rooms for various discussions.</p>`;
-    html += `<a href="https://discord.gg/aR5pXyVG3V" target="_blank" rel="noopener noreferrer" class="btn btn-primary">${discordIcon}Join Server</a>`;
+    html += `<a href="https://discord.gg/rsC4V32GZa" target="_blank" rel="noopener noreferrer" class="btn btn-primary">${discordIcon}Join Server</a>`;
     html += `</div></div></div>`;
     html += `<div class="about-card-col">`;
     html += `<div class="about-dev-header"><span class="about-dev-badge">Main Developer of AniCult</span></div>`;
