@@ -824,7 +824,7 @@ select:focus {
 }
 
 .about {
-  max-width: 680px;
+  max-width: 720px;
   margin: 0 auto;
 }
 
@@ -865,43 +865,150 @@ select:focus {
   flex-shrink: 0;
 }
 
-.about-links {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
+.about-connect {
+  display: grid;
+  gap: 14px;
 }
 
-.about-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
+.about-discord {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  transition: all var(--transition);
-  min-width: 220px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  position: relative;
+  min-width: 0;
 }
 
-.about-link:hover {
-  border-color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+.about-discord-banner {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  display: block;
 }
 
-.about-link svg {
+.about-discord-icon {
+  position: absolute;
+  top: 88px;
+  left: 24px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 4px solid var(--bg-card);
+  background: var(--bg-card);
+}
+
+.about-discord-body {
+  padding: 44px 24px 24px;
+}
+
+.about-discord-name {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.about-discord-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.about-sep {
+  opacity: 0.5;
+}
+
+.about-online {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.presence-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
   flex-shrink: 0;
 }
 
+.about-discord-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+.about-discord .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  font-size: 13px;
+}
+
+.about-discord .btn:hover,
+.about-discord .btn:active {
+  background: var(--accent);
+  box-shadow: none;
+  transform: none;
+}
+
+.about-card-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.about-row {
+  flex: 1;
+  min-height: 104px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  text-decoration: none;
+  text-align: center;
+  min-width: 0;
+}
+
+.about-row svg,
+.about-portfolio-logo {
+  flex-shrink: 0;
+}
+
+.about-portfolio-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.about-card-text {
+  min-width: 0;
+}
+
 .about-link-title {
+  display: block;
   font-size: 14px;
   font-weight: 600;
   color: var(--text);
 }
 
 .about-link-text {
+  display: block;
   font-size: 12px;
   color: var(--text-muted);
+  margin-top: 2px;
 }
 
 .continue-label {
@@ -1940,6 +2047,13 @@ select:focus {
   .lang-btn {
     padding: 5px 12px;
     font-size: 12px;
+  }
+}
+
+@media (min-width: 769px) {
+  .about-connect {
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
   }
 }
 
