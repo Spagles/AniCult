@@ -209,10 +209,10 @@
   }
 
   function title(anime) {
-    return anime.title.english || anime.title.romaji;
+    return anime?.title?.english || anime?.title?.romaji || "";
   }
   function cover(anime) {
-    return anime.coverImage.extraLarge || anime.coverImage.large;
+    return anime?.coverImage?.extraLarge || anime?.coverImage?.large || "";
   }
   function epText(anime) {
     if (anime.nextAiringEpisode)
