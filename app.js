@@ -1147,15 +1147,15 @@
 
     let html = `<div class="about">`;
     html += `<h1 class="section-title" style="margin-bottom:8px">About AniCult</h1>`;
-    html += `<p class="about-text">AniCult is a free, ad-free anime streaming experience that runs entirely in your browser. Browse anime from AniList, stream instantly through the built-in player, and track your watchlist, history, and progress — no account or sign-up required.</p>`;
+    html += `<p class="about-text">AniCult is a free, ad-free anime streaming experience that runs entirely in your browser. Browse anime powered by AniList, stream instantly through the built-in player, and track your watchlist, history, and episode progress with no account or sign-up required.</p>`;
 
     html += `<h2 class="about-subtitle">What's Inside</h2>`;
     html += `<ul class="about-list">`;
-    html += `<li>Trending, popular, and recently updated anime — refreshed from AniList</li>`;
+    html += `<li>Trending, popular, and recently updated anime refreshed directly from AniList</li>`;
     html += `<li>Search with format filters (TV, Movie, OVA, ONA, Special) and 6 sort options</li>`;
-    html += `<li>Sub/Dub player with autoplay, auto-next, and error retry</li>`;
-    html += `<li>Watchlist, watch history, and episode progress saved locally</li>`;
-    html += `<li>Fully responsive — built for desktop and mobile</li>`;
+    html += `<li>Sub/Dub player with autoplay, auto-next, and error retry support</li>`;
+    html += `<li>Watchlist, watch history, and episode progress saved locally in your browser</li>`;
+    html += `<li>Fully responsive design built for both desktop and mobile devices</li>`;
     html += `</ul>`;
 
     html += `<div class="about-connect">`;
@@ -1167,7 +1167,7 @@
     html += `<img class="about-discord-icon" src="https://cdn.discordapp.com/icons/1455877276007796738/b863a4836ae39be4a9afbecd969504c5.png?size=256" alt="Dacca Cult icon" loading="lazy">`;
     html += `<div class="about-discord-name">Dacca Cult</div>`;
     html += `<div class="about-discord-meta"><span>237 members</span><span class="about-sep">&middot;</span><span class="about-online"><i class="presence-dot"></i>27 online</span></div>`;
-    html += `<p class="about-discord-desc">We value freedom of speech but it must not be confused with or to justify hate speech. Space for community bonding and dedicated rooms for various discussion.</p>`;
+    html += `<p class="about-discord-desc">We value freedom of speech, ensuring a welcoming space for community bonding with dedicated rooms for various discussions.</p>`;
     html += `<a href="https://discord.gg/aR5pXyVG3V" target="_blank" rel="noopener noreferrer" class="btn btn-primary">${discordIcon}Join Server</a>`;
     html += `</div></div></div>`;
     html += `<div class="about-card-col">`;
