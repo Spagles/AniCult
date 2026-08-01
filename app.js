@@ -913,10 +913,11 @@
       }
 
       if (totalEps > 0) {
+        const watched = getProgress(anime.id);
         html += `<div style="margin-top:24px"><h3 class="episodes-title" style="margin-bottom:12px">Episodes</h3><div class="episodes-grid">`;
         for (let i = 1; i <= totalEps; i++) {
           const isUpcoming = nextEp && i >= nextEp && isAiring;
-          const isWatched = i <= getProgress(anime.id);
+          const isWatched = i <= watched;
           let cls = "ep-btn";
           if (i === episode) cls += " ep-btn-current";
           else if (isWatched) cls += " ep-btn-watched";
